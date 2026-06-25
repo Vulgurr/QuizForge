@@ -1,0 +1,47 @@
+# =========================
+# ⚙️ ENTORNOS Y SECRETOS
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# ☕ BACKEND (Java / Spring Boot / Maven)
+# =========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# =========================
+# 💻 FRONTEND (Node.js / React / Next.js)
+# =========================
+node_modules/
+.next/
+out/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+
+# =========================
+# 🛠️ IDEs y SISTEMA OPERATIVO
+# =========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
