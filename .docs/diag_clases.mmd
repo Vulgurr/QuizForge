@@ -1,0 +1,276 @@
+```mermaid
+classDiagram
+
+%% =======================
+%% CAPA DE PRESENTACIÓN
+%% =======================
+
+classDiagram
+
+%% =======================
+%% CAPA DE PRESENTACIÓN
+%% =======================
+
+class AuthController {
++login(dto: AuthRequestDTO): ResponseEntity
++registrar(dto: AuthRequestDTO): ResponseEntity
+}
+
+class ExamenController {
++crearExamen(dto: ExamenRequestDTO, token: String): ResponseEntity
++eliminarExamen(examenId: int, token: String): ResponseEntity
++obtenerExamen(categoriaSlug: String, examenSlug: String): ResponseEntity
+}
+
+class CategoriaController {
++crearCategoria(dto: CategoriaRequestDTO, token: String): ResponseEntity
++eliminarCategoria(categoriaId: int, token: String): ResponseEntity
++listarCategorias(): ResponseEntity
++obtenerExamenesPorCategoria(categoriaSlug: String): ResponseEntity
+}
+
+%% =======================
+%% CAPA DE TRANSPORTE (DTOs)
+%% =======================
+
+class AuthRequestDTO {
++String email
++String password
+}
+
+class AuthResponseDTO {
++String tokenJwt
++String rol
+}
+
+class ExamenRequestDTO {
++String titulo
++String descripcion
++int categoriaId
++List~PreguntaDTO~ preguntas
+}
+
+class CategoriaRequestDTO {
++String nombre
++String descripcion
++List~String~ apodos
+}
+
+class PreguntaDTO {
+<<abstract>>
++String tipo
++String texto
+}
+
+class PreguntaMultipleChoiceDTO {
++List~String~ opciones
++String respuestaCorrecta
+}
+
+class PreguntaVerdaderoFalsoDTO {
++boolean respuestaCorrecta
+}
+
+class PreguntaDesarrolloDeterministicoDTO {
++String respuestaEsperadaExacta
+}
+
+class PreguntaDesarrolloNoDeterministicoDTO {
++String rubricaEvaluacion
+}
+
+%% DTOs DE RESPUESTA
+
+class CategoriaResponseDTO {
++int id
++String nombre
++String descripcion
++String slug
++int creadorId
+}
+
+class ExamenResumenDTO {
++int id
++String titulo
++String descripcion
++String slug
++String creadorEmail
++LocalDateTime creadoEn
+}
+
+class ExamenResponseDTO {
++int id
++String titulo
++String descripcion
++String slug
++String categoria
++String creadorEmail
++LocalDateTime creadoEn
++List~PreguntaDTO~ preguntas
+}
+
+%% =======================
+%% CAPA DE NEGOCIO (GESTORES)
+%% =======================
+
+class GestorAuth {
++registrarUsuario(dto: AuthRequestDTO): Usuario
++autenticar(dto: AuthRequestDTO): AuthResponseDTO
+}
+
+class GestorCategoria {
++crearCategoria(dto: CategoriaRequestDTO, usuarioId: int): CategoriaResponseDTO
++eliminarCategoria(categoriaId: int, usuarioId: int, rol: String): void
++listarCategorias(): List~CategoriaResponseDTO~
++buscarPorApodo(apodo: String): List~CategoriaResponseDTO~
+-generarSlug(nombre: String): String
+}
+
+class GestorExamen {
++crearExamen(dto: ExamenRequestDTO, usuarioId: int): ExamenResponseDTO
++eliminarExamen(examenId: int, usuarioId: int, rol: String): void
++obtenerPorSlugs(categoriaSlug: String, examenSlug: String): ExamenResponseDTO
+}
+
+class GestorSeguridad {
++generarToken(usuario: Usuario): String
++extraerUsuarioId(token: String): int
++extraerRol(token: String): String
++esPropietarioOAdmin(usuarioId: int, creadorId: int, rol: String): boolean
+}
+
+%% =======================
+%% CAPA DE PERSISTENCIA
+%% =======================
+
+class UsuarioRepository {
+<<interface>>
++findByEmail(email: String): Optional~Usuario~
++save(usuario: Usuario): Usuario
+}
+
+class ExamenRepository {
+<<interface>>
++findBySlug(slug: String): Optional~Examen~
++findByCategoriaId(categoriaId: int): List~Examen~
++save(examen: Examen): Examen
++deleteById(id: int): void
+}
+
+class CategoriaRepository {
+<<interface>>
++findBySlug(slug: String): Optional~Categoria~
++findAll(): List~Categoria~
++save(categoria: Categoria): Categoria
++findByApodo(apodo: String): List~Categoria~
++deleteById(id: int): void
+}
+
+%% =======================
+%% ENTIDADES DEL DOMINIO
+%% =======================
+
+class Usuario {
+-int id
+-String email
+-String passwordHash
+-String rol
+}
+
+class Categoria {
+-int id
+-String nombre
+-String descripcion
+-String slug
+-int creadorId
+-List~String~ apodos
+}
+
+class Examen {
+-int id
+-String titulo
+-String descripcion
+-String slug
+-int creadorId
+-int categoriaId
+-LocalDateTime creadoEn
+}
+
+class Pregunta {
+<<abstract>>
+-int id
+-int examenId
+-String texto
+}
+
+class PreguntaMultipleChoice {
+-List~String~ opciones
+-String respuestaCorrecta
+}
+
+class PreguntaVerdaderoFalso {
+-boolean respuestaCorrecta
+}
+
+class PreguntaDesarrolloDeterministico {
+-String respuestaEsperadaExacta
+}
+
+class PreguntaDesarrolloNoDeterministico {
+-String rubricaEvaluacion
+}
+
+%% =======================
+%% RELACIONES
+%% =======================
+
+%% Flujo de autenticación
+AuthController ..> AuthRequestDTO : recibe
+AuthController ..> AuthResponseDTO : devuelve
+AuthController --> GestorAuth : delega
+
+GestorAuth --> UsuarioRepository : usa
+GestorAuth --> GestorSeguridad : solicita token
+
+%% Flujo de categorías
+CategoriaController ..> CategoriaRequestDTO : recibe
+CategoriaController ..> CategoriaResponseDTO : devuelve
+CategoriaController ..> ExamenResumenDTO : devuelve
+CategoriaController --> GestorCategoria : delega
+
+GestorCategoria --> GestorSeguridad : valida permisos
+GestorCategoria --> CategoriaRepository : usa
+
+%% Flujo de exámenes
+ExamenController ..> ExamenRequestDTO : recibe
+ExamenController ..> ExamenResponseDTO : devuelve
+ExamenController --> GestorExamen : delega
+
+ExamenRequestDTO *-- PreguntaDTO : contiene
+ExamenResponseDTO *-- PreguntaDTO : contiene
+
+GestorExamen --> GestorSeguridad : valida permisos
+GestorExamen --> ExamenRepository : usa
+
+%% Persistencia
+UsuarioRepository ..> Usuario : persiste
+ExamenRepository ..> Examen : persiste
+CategoriaRepository ..> Categoria : persiste
+
+%% Relaciones de dominio
+Usuario "1" o-- "*" Examen : crea
+Usuario "1" o-- "*" Categoria : crea
+Categoria "1" o-- "*" Examen : contiene
+Examen "1" *-- "*" Pregunta : composicion
+
+%% Relaciones de Herencia (Polimorfismo)
+PreguntaMultipleChoice --|> Pregunta : hereda
+PreguntaVerdaderoFalso --|> Pregunta : hereda
+PreguntaDesarrolloDeterministico --|> Pregunta : hereda
+PreguntaDesarrolloNoDeterministico --|> Pregunta : hereda
+
+PreguntaMultipleChoiceDTO --|> PreguntaDTO : hereda
+PreguntaVerdaderoFalsoDTO --|> PreguntaDTO : hereda
+PreguntaDesarrolloDeterministicoDTO --|> PreguntaDTO : hereda
+PreguntaDesarrolloNoDeterministicoDTO --|> PreguntaDTO : hereda
+```
