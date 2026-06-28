@@ -4,6 +4,9 @@
 .env
 .env.*
 !.env.example
+.cursor
+.docs/explicaciones.md
+
 
 # =========================
 # ☕ BACKEND (Java / Spring Boot / Maven)
@@ -54,3 +57,4 @@ git remote add origin https://github.com/Vulgurr/QuizForge.git
 
 # 3. Subimos de forma forzada (-f) para sobreescribir cualquier error previo
 git push -f -u origin main
+.docs/explicaciones.md
