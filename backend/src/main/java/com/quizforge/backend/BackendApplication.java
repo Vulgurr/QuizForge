@@ -11,3 +11,7 @@ public class BackendApplication {
 	}
 
 }
+//
+
+// echo $env:JAVA_HOME
+

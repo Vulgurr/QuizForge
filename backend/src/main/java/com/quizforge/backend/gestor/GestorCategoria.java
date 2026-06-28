@@ -164,7 +164,8 @@ public class GestorCategoria {
     }
 
     private String generarSlug(String nombre) {
-        String normalizado = nombre.trim()
+        String normalizado = java.text.Normalizer.normalize(nombre.trim(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9\\s-]", "")
                 .replaceAll("\\s+", "-")

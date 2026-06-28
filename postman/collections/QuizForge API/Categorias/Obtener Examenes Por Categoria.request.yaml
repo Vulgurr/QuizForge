@@ -1,0 +1,15 @@
+$kind: http-request
+name: Obtener Examenes Por Categoria
+url: "{{baseurl}}/api/categorias/matematicas/examenes"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Exámenes obtenidos exitosamente");
+      } else {
+          console.log("Error al obtener exámenes: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5000

@@ -1,0 +1,15 @@
+$kind: http-request
+name: Obtener Examen
+url: "{{baseurl}}/api/examenes/inteligencia-artificial/examen-de-algebra-1"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Examen obtenido exitosamente");
+      } else {
+          console.log("Error al obtener examen: " + pm.response.code);
+      }
+    language: text/javascript
+order: 3000

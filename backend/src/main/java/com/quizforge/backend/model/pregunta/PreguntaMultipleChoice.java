@@ -1,6 +1,11 @@
 package com.quizforge.backend.model.pregunta;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,9 +24,9 @@ public class PreguntaMultipleChoice extends Pregunta {
             name = "pregunta_opciones",
             joinColumns = @JoinColumn(name = "pregunta_id")
     )
-    @Column(name = "opcion", nullable = false)
+    @Column(name = "opcion")
     private List<String> opciones;
 
-    @Column(name = "respuesta_correcta_texto")
+    @Column(name = "respuesta_correcta")
     private String respuestaCorrecta;
 }

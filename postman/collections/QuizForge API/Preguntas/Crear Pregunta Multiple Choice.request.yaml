@@ -1,0 +1,27 @@
+$kind: http-request
+name: Crear Pregunta Multiple Choice
+url: "{{baseurl}}/api/preguntas"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "tipo": "MULTIPLE_CHOICE",
+      "texto": "¿En qué año cayó el muro de Berlín?",
+      "opciones": ["1987", "1989", "1991", "1993"],
+      "respuestaCorrecta": "1989",
+      "examenId": 2
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Pregunta creada exitosamente");
+      } else {
+          console.log("Error al crear pregunta: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5000

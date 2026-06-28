@@ -1,0 +1,17 @@
+$kind: http-request
+name: Eliminar Pregunta
+url: "{{baseurl}}/api/preguntas/1"
+method: DELETE
+headers:
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 204) {
+          console.log("Pregunta eliminada exitosamente");
+      } else {
+          console.log("Error al eliminar pregunta: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5005

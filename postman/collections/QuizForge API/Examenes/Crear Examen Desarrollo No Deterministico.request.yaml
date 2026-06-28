@@ -1,0 +1,23 @@
+$kind: http-request
+name: Crear Examen Desarrollo No Deterministico
+url: "{{baseurl}}/api/examenes"
+method: POST
+body:
+  type: json
+  content: "{\r   \"titulo\": \"Examen de Literatura\",\r   \"descripcion\":
+    \"Examen de análisis literario\",\r   \"categoriaId\": 1,\r   \"preguntas\":
+    [\r     {\r       \"tipo\":
+    \"DESARROLLO_NO_DETERMINISTICO\",\r       \"texto\": \"Analiza el simbolismo
+    en la obra 'Cien años de soledad'\",\r       \"rubricaEvaluacion\": \"Se
+    evaluará la profundidad del análisis, la identificación de símbolos
+    principales y la coherencia argumentativa\"\r     }\r   ]\r }"
+headers:
+  - name: Authorization
+    value: "Bearer {{jwt_token}}"
+scripts:
+  - type: afterResponse
+    code: "// Verificar respuesta\r if (pm.response.code === 201) {\r
+      console.log(\"Examen creado exitosamente\");\r } else {\r
+      console.log(\"Error al crear examen: \" + pm.response.code);\r }"
+    language: text/javascript
+order: 7000

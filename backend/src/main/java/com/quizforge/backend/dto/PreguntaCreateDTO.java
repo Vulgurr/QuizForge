@@ -14,12 +14,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = PreguntaDesarrolloDeterministicoDTO.class, name = "DESARROLLO_DETERMINISTICO"),
     @JsonSubTypes.Type(value = PreguntaDesarrolloNoDeterministicoDTO.class, name = "DESARROLLO_NO_DETERMINISTICO")
 })
-public sealed interface PreguntaDTO permits
+public sealed interface PreguntaCreateDTO permits
         PreguntaMultipleChoiceDTO,
         PreguntaVerdaderoFalsoDTO,
         PreguntaDesarrolloDeterministicoDTO,
         PreguntaDesarrolloNoDeterministicoDTO {
 
-    Integer id();
     String texto();
+    Integer examenId();
 }

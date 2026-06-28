@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{baseurl}}/api/examenes"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "titulo": "Examen de Historia",
+      "descripcion": "Examen de historia universal",
+      "categoriaId": 1,
+      "preguntas": [
+        {
+          "tipo": "MULTIPLE_CHOICE",
+          "texto": "¿En qué año cayó el muro de Berlín?",
+          "opciones": ["1987", "1989", "1991", "1993"],
+          "respuestaCorrecta": "1989"
+        }
+      ]
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Examen creado exitosamente");
+      } else {
+          console.log("Error al crear examen: " + pm.response.code);
+      }
+    language: text/javascript
+order: 2475
