@@ -1,0 +1,26 @@
+$kind: http-request
+name: Crear Pregunta Verdadero Falso
+url: "{{baseurl}}/api/preguntas"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "tipo": "VERDADERO_FALSO",
+      "texto": "La Tierra es plana",
+      "respuestaCorrecta": false,
+      "examenId": 1
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Pregunta creada exitosamente");
+      } else {
+          console.log("Error al crear pregunta: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5001

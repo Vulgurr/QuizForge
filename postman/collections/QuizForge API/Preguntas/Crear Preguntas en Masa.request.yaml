@@ -1,0 +1,41 @@
+$kind: http-request
+name: Crear Preguntas en Masa
+url: "{{baseurl}}/api/preguntas/masa"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    [
+      {
+        "tipo": "MULTIPLE_CHOICE",
+        "texto": "¿Cuál es el planeta más grande del sistema solar?",
+        "opciones": ["Tierra", "Marte", "Júpiter", "Saturno"],
+        "respuestaCorrecta": "Júpiter",
+        "examenId": 1
+      },
+      {
+        "tipo": "VERDADERO_FALSO",
+        "texto": "El agua hierve a 100°C a nivel del mar",
+        "respuestaCorrecta": true,
+        "examenId": 1
+      },
+      {
+        "tipo": "DESARROLLO_DETERMINISTICO",
+        "texto": "¿Cuánto es 2 + 2?",
+        "respuestaEsperadaExacta": "4",
+        "examenId": 1
+      }
+    ]
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Preguntas creadas en masa exitosamente");
+      } else {
+          console.log("Error al crear preguntas en masa: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5004

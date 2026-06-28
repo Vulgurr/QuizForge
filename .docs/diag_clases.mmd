@@ -5,12 +5,6 @@ classDiagram
 %% CAPA DE PRESENTACIÓN
 %% =======================
 
-classDiagram
-
-%% =======================
-%% CAPA DE PRESENTACIÓN
-%% =======================
-
 class AuthController {
 +login(dto: AuthRequestDTO): ResponseEntity
 +registrar(dto: AuthRequestDTO): ResponseEntity
@@ -27,6 +21,13 @@ class CategoriaController {
 +eliminarCategoria(categoriaId: int, token: String): ResponseEntity
 +listarCategorias(): ResponseEntity
 +obtenerExamenesPorCategoria(categoriaSlug: String): ResponseEntity
+}
+
+class PreguntaController {
++crearPregunta(dto: PreguntaCreateDTO, token: String): ResponseEntity
++crearPreguntasEnMasa(dtos: List~PreguntaCreateDTO~, token: String): ResponseEntity
++eliminarPregunta(preguntaId: int, token: String): ResponseEntity
++listarPreguntasPorExamen(examenId: int): ResponseEntity
 }
 
 %% =======================
@@ -58,25 +59,36 @@ class CategoriaRequestDTO {
 
 class PreguntaDTO {
 <<abstract>>
++Integer id
 +String tipo
 +String texto
+}
+
+class PreguntaCreateDTO {
+<<abstract>>
++String texto
++Integer examenId
 }
 
 class PreguntaMultipleChoiceDTO {
 +List~String~ opciones
 +String respuestaCorrecta
++Integer examenId
 }
 
 class PreguntaVerdaderoFalsoDTO {
 +boolean respuestaCorrecta
++Integer examenId
 }
 
 class PreguntaDesarrolloDeterministicoDTO {
 +String respuestaEsperadaExacta
++Integer examenId
 }
 
 class PreguntaDesarrolloNoDeterministicoDTO {
 +String rubricaEvaluacion
++Integer examenId
 }
 
 %% DTOs DE RESPUESTA
@@ -132,6 +144,13 @@ class GestorExamen {
 +obtenerPorSlugs(categoriaSlug: String, examenSlug: String): ExamenResponseDTO
 }
 
+class GestorPregunta {
++crearPregunta(dto: PreguntaCreateDTO, usuarioId: int, rol: String): PreguntaDTO
++crearPreguntasEnMasa(dtos: List~PreguntaCreateDTO~, usuarioId: int, rol: String): void
++eliminarPregunta(preguntaId: int, usuarioId: int, rol: String): void
++listarPreguntasPorExamen(examenId: int): List~PreguntaDTO~
+}
+
 class GestorSeguridad {
 +generarToken(usuario: Usuario): String
 +extraerUsuarioId(token: String): int
@@ -163,6 +182,14 @@ class CategoriaRepository {
 +findAll(): List~Categoria~
 +save(categoria: Categoria): Categoria
 +findByApodo(apodo: String): List~Categoria~
++deleteById(id: int): void
+}
+
+class PreguntaRepository {
+<<interface>>
++findByExamenId(examenId: int): List~Pregunta~
++findByIdAndExamenId(preguntaId: int, examenId: int): Optional~Pregunta~
++save(pregunta: Pregunta): Pregunta
 +deleteById(id: int): void
 }
 
@@ -252,10 +279,20 @@ ExamenResponseDTO *-- PreguntaDTO : contiene
 GestorExamen --> GestorSeguridad : valida permisos
 GestorExamen --> ExamenRepository : usa
 
+%% Flujo de preguntas
+PreguntaController ..> PreguntaCreateDTO : recibe
+PreguntaController ..> PreguntaDTO : devuelve
+PreguntaController --> GestorPregunta : delega
+
+GestorPregunta --> GestorSeguridad : valida permisos
+GestorPregunta --> PreguntaRepository : usa
+GestorPregunta --> ExamenRepository : usa
+
 %% Persistencia
 UsuarioRepository ..> Usuario : persiste
 ExamenRepository ..> Examen : persiste
 CategoriaRepository ..> Categoria : persiste
+PreguntaRepository ..> Pregunta : persiste
 
 %% Relaciones de dominio
 Usuario "1" o-- "*" Examen : crea
@@ -270,7 +307,11 @@ PreguntaDesarrolloDeterministico --|> Pregunta : hereda
 PreguntaDesarrolloNoDeterministico --|> Pregunta : hereda
 
 PreguntaMultipleChoiceDTO --|> PreguntaDTO : hereda
+PreguntaMultipleChoiceDTO ..|> PreguntaCreateDTO : implementa
 PreguntaVerdaderoFalsoDTO --|> PreguntaDTO : hereda
+PreguntaVerdaderoFalsoDTO ..|> PreguntaCreateDTO : implementa
 PreguntaDesarrolloDeterministicoDTO --|> PreguntaDTO : hereda
+PreguntaDesarrolloDeterministicoDTO ..|> PreguntaCreateDTO : implementa
 PreguntaDesarrolloNoDeterministicoDTO --|> PreguntaDTO : hereda
+PreguntaDesarrolloNoDeterministicoDTO ..|> PreguntaCreateDTO : implementa
 ```

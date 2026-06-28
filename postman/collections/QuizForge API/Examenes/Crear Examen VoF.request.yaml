@@ -1,0 +1,33 @@
+$kind: http-request
+url: "{{baseurl}}/api/examenes"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "titulo": "Examen de Álgebra",
+      "descripcion": "Examen básico de álgebra",
+      "categoriaId": 1,
+      "preguntas": [
+        {
+          "tipo": "VERDADERO_FALSO",
+          "texto": "2 + 2 = 4",
+          "respuestaCorrecta": true
+        }
+      ]
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Examen creado exitosamente");
+      } else {
+          console.log("Error al crear examen: " + pm.response.code);
+      }
+    language: text/javascript
+order: 2000

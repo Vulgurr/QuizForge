@@ -4,6 +4,10 @@
 .env
 .env.*
 !.env.example
+.cursor
+.docs/explicaciones.md
+.docs/todo
+
 
 # =========================
 # ☕ BACKEND (Java / Spring Boot / Maven)
@@ -46,11 +50,3 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# 1. Renombramos la rama principal
-git branch -M main
-
-# 2. Conectamos con tu repositorio exacto (reemplazá con tu usuario)
-git remote add origin https://github.com/Vulgurr/QuizForge.git
-
-# 3. Subimos de forma forzada (-f) para sobreescribir cualquier error previo
-git push -f -u origin main

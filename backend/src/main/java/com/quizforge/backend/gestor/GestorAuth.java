@@ -65,8 +65,8 @@ public class GestorAuth {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
         }
 
-        String tokenJwt = gestorSeguridad.generarToken(usuario);
-        return new AuthResponseDTO(tokenJwt, usuario.getRol());
+        String token = gestorSeguridad.generarToken(usuario);
+        return new AuthResponseDTO(token, usuario.getRol());
     }
 
     private void validarAuthRequest(AuthRequestDTO dto) {

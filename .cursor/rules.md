@@ -8,3 +8,6 @@
 - Módulo Examen: crear entidad `Examen` en `model`, `ExamenRepository` en `repository`, `ExamenGestor` en `gestor`, `ExamenController` en `controller`.
 - Persistencia JPA: usar `@Entity`, `@Id`, `@GeneratedValue`, `@Repository`, `@Service`/`@Component` según corresponda.
 - Las validaciones y lógica de negocio deben residir exclusivamente en el Gestor. Los Controladores solo delegan y retornan DTOs.
+
+## Patrones Específicos
+- **Polimorfismo en Preguntas:** La entidad `Pregunta` es una clase abstracta con estrategia de herencia `SINGLE_TABLE`. Toda nueva variante de pregunta debe heredar de esta clase base y definir su propio `DiscriminatorValue`. No se utilizan campos JSON dinámicos para metadatos.

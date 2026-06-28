@@ -1,0 +1,15 @@
+$kind: http-request
+name: Listar Preguntas por Examen
+url: "{{baseurl}}/api/preguntas/examen/2"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Preguntas listadas exitosamente");
+      } else {
+          console.log("Error al listar preguntas: " + pm.response.code);
+      }
+    language: text/javascript
+order: 5006

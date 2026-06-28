@@ -1,0 +1,34 @@
+$kind: http-request
+name: Crear Examen Deterministico
+url: "{{baseurl}}/api/examenes"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "titulo": "Examen de Química",
+      "descripcion": "Examen de química orgánica",
+      "categoriaId": 1,
+      "preguntas": [
+        {
+          "tipo": "DESARROLLO_DETERMINISTICO",
+          "texto": "¿Cuál es la fórmula química del agua?",
+          "respuestaEsperadaExacta": "H2O"
+        }
+      ]
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Examen creado exitosamente");
+      } else {
+          console.log("Error al crear examen: " + pm.response.code);
+      }
+    language: text/javascript
+order: 3546893902878237

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseurl}}/api/categorias"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Matemáticas",
+      "descripcion": "Categoría de matemáticas",
+      "apodos": ["math", "mat"]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Categoría creada exitosamente");
+      } else {
+          console.log("Error al crear categoría: " + pm.response.code);
+      }
+    language: text/javascript
+order: 2000

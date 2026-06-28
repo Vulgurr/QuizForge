@@ -1,0 +1,25 @@
+$kind: http-request
+name: Crear Categoria 2
+url: "{{baseurl}}/api/categorias"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "nombre": "Inteligencia Artificial",
+      "descripcion": "Categoria de IA",
+      "apodos": ["AI", "IA"]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 201) {
+          console.log("Categoría creada exitosamente");
+      } else {
+          console.log("Error al crear categoría: " + pm.response.code);
+      }
+    language: text/javascript
+order: 1628

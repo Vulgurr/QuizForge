@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseurl}}/api/auth/login"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+      "email": "usuario@ejemplo.com",
+      "password": "tuPassword123"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Guardar el token JWT en una variable de entorno
+      if (pm.response.code === 200) {
+          const jsonResponse = pm.response.json();
+          if (jsonResponse.token) {
+              pm.environment.set("jwt_token", jsonResponse.token);
+              console.log("JWT token guardado en variable de entorno: jwt_token");
+          }
+      }
+    language: text/javascript
+order: 2000

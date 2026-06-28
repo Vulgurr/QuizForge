@@ -1,0 +1,56 @@
+$kind: http-request
+name: Eliminar Categoria
+url: "{{baseurl}}/api/categorias/2"
+method: DELETE
+headers:
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 204) {
+          console.log("Categoría eliminada exitosamente");
+      } else {
+          console.log("Error al eliminar categoría: " + pm.response.code);
+      }
+    language: text/javascript
+  - type: beforeRequest
+    code: "// Definición de la petición DELETE\r
+
+      const deleteRequest = {\r
+
+      \    url: 'http://localhost:8080/api/categorias/2',\r
+
+      \    method: 'DELETE',\r
+
+      \    header: {\r
+
+      \        'Authorization': 'Bearer ' + pm.environment.get(\"jwt_token\"), // Solo si requiere auth\r
+
+      \        'Content-Type': 'application/json'\r
+
+      \    }\r
+
+      };\r
+
+      \r
+
+      // Ejecución de la petición\r
+
+      pm.sendRequest(deleteRequest, function (err, response) {\r
+
+      \    if (err) {\r
+
+      \        console.log(\"Error en el DELETE:\", err);\r
+
+      \    } else {\r
+
+      \        console.log(\"Respuesta del servidor:\", response.code);\r
+
+      \        console.log(\"Cuerpo de respuesta:\", response.text());\r
+
+      \    }\r
+
+      });"
+    language: text/javascript
+order: 4000

@@ -14,6 +14,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PreguntaVerdaderoOFalso extends Pregunta {
 
-    @Column(name = "respuesta_correcta_booleana")
+    @Column(name = "respuesta_correcta")
     private boolean respuestaCorrecta;
 }

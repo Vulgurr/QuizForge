@@ -1,0 +1,4 @@
+$kind: collection
+description: Colección de requests para testing manual de la API de QuizForge
+variables:
+  baseurl: http://localhost:8080

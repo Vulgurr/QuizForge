@@ -1,0 +1,22 @@
+$kind: http-request
+name: Crear Examen Multiple Choice
+url: "{{baseurl}}/api/examenes"
+method: POST
+body:
+  type: json
+  content: "{\r   \"titulo\": \"Examen de Historia\",\r   \"descripcion\":
+    \"Examen de historia universal\",\r   \"categoriaId\": 1,\r   \"preguntas\":
+    [\r     {\r       \"tipo\": \"MULTIPLE_CHOICE\",\r       \"texto\": \"¿En
+    qué año cayó el muro de Berlín?\",\r       \"opciones\": [\"1987\",
+    \"1989\", \"1991\", \"1993\"],\r       \"respuestaCorrecta\":
+    \"1989\"\r     }\r   ]\r }"
+headers:
+  - name: Authorization
+    value: "Bearer {{jwt_token}}"
+scripts:
+  - type: afterResponse
+    code: "// Verificar respuesta\r if (pm.response.code === 201) {\r
+      console.log(\"Examen creado exitosamente\");\r } else {\r
+      console.log(\"Error al crear examen: \" + pm.response.code);\r }"
+    language: text/javascript
+order: 5000

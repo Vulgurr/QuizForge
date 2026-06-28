@@ -1,0 +1,7 @@
+name: Variables entorno
+values:
+  - key: baseurl
+    value: ''
+  - key: jwt_token
+    value: ''
+color: 0
