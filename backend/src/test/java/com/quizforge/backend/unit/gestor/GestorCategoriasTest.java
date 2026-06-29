@@ -176,4 +176,95 @@ class GestorCategoriaTest {
 
         verify(categoriaRepository, times(1)).findByApodo("math");
     }
+
+    @Test
+    void listarCategoriasPorCreador_usuarioConExamenes_retornaListaDeCategorias() {
+        // Arrange
+        int usuarioId = 1;
+        Categoria categoria1 = new Categoria();
+        categoria1.setId(1);
+        categoria1.setNombre("Matemáticas");
+        categoria1.setSlug("matematicas");
+
+        Categoria categoria2 = new Categoria();
+        categoria2.setId(2);
+        categoria2.setNombre("Programación");
+        categoria2.setSlug("programacion");
+
+        when(categoriaRepository.findCategoriasConExamenesDelUsuario(usuarioId))
+                .thenReturn(List.of(categoria1, categoria2));
+
+        // Act
+        List<CategoriaResponseDTO> resultados = gestorCategoria.listarCategoriasPorCreador(usuarioId);
+
+        // Assert
+        assertThat(resultados).hasSize(2);
+        assertThat(resultados.get(0).nombre()).isEqualTo("Matemáticas");
+        assertThat(resultados.get(1).nombre()).isEqualTo("Programación");
+
+        verify(categoriaRepository, times(1)).findCategoriasConExamenesDelUsuario(usuarioId);
+    }
+
+    @Test
+    void listarCategoriasPorCreador_usuarioSinExamenes_retornaListaVacia() {
+        // Arrange
+        int usuarioId = 99;
+        when(categoriaRepository.findCategoriasConExamenesDelUsuario(usuarioId))
+                .thenReturn(List.of());
+
+        // Act
+        List<CategoriaResponseDTO> resultados = gestorCategoria.listarCategoriasPorCreador(usuarioId);
+
+        // Assert
+        assertThat(resultados).isEmpty();
+
+        verify(categoriaRepository, times(1)).findCategoriasConExamenesDelUsuario(usuarioId);
+    }
+
+    @Test
+    void eliminarCategoria_conExamenesVinculados_lanzaExcepcionConflict() {
+        // Arrange
+        int categoriaId = 10;
+        int usuarioId = 1;
+        String rol = "USER";
+
+        Categoria categoriaExistente = new Categoria();
+        categoriaExistente.setId(categoriaId);
+        categoriaExistente.setCreadorId(usuarioId);
+
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoriaExistente));
+        when(gestorSeguridad.esPropietarioOAdmin(usuarioId, categoriaExistente.getCreadorId(), rol)).thenReturn(true);
+        when(examenRepository.countByCategoriaId(categoriaId)).thenReturn(5L);
+
+        // Act & Assert
+        assertThatThrownBy(() -> gestorCategoria.eliminarCategoria(categoriaId, usuarioId, rol))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No se puede borrar una categoría que contiene exámenes");
+
+        verify(categoriaRepository, never()).deleteById(anyInt());
+    }
+
+    @Test
+    void eliminarCategoria_sinExamenesVinculados_eliminaExitosamente() {
+        // Arrange
+        int categoriaId = 10;
+        int usuarioId = 1;
+        String rol = "USER";
+
+        Categoria categoriaExistente = new Categoria();
+        categoriaExistente.setId(categoriaId);
+        categoriaExistente.setCreadorId(usuarioId);
+
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoriaExistente));
+        when(gestorSeguridad.esPropietarioOAdmin(usuarioId, categoriaExistente.getCreadorId(), rol)).thenReturn(true);
+        when(examenRepository.countByCategoriaId(categoriaId)).thenReturn(0L);
+
+        // Act
+        gestorCategoria.eliminarCategoria(categoriaId, usuarioId, rol);
+
+        // Assert
+        verify(categoriaRepository, times(1)).findById(categoriaId);
+        verify(examenRepository, times(1)).countByCategoriaId(categoriaId);
+        verify(categoriaRepository, times(1)).deleteById(categoriaId);
+    }
 }

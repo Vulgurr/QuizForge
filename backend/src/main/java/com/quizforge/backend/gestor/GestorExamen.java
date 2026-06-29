@@ -2,6 +2,7 @@ package com.quizforge.backend.gestor;
 
 import com.quizforge.backend.dto.ExamenRequestDTO;
 import com.quizforge.backend.dto.ExamenResponseDTO;
+import com.quizforge.backend.dto.ExamenResumenDTO;
 import com.quizforge.backend.dto.PreguntaDTO;
 import com.quizforge.backend.dto.PreguntaMultipleChoiceDTO;
 import com.quizforge.backend.dto.PreguntaVerdaderoFalsoDTO;
@@ -113,6 +114,19 @@ public class GestorExamen {
         return mapearAResponseDTO(examen);
     }
 
+    @Transactional(readOnly = true)
+    public List<ExamenResumenDTO> listarMisExamenesPorCategoria(int usuarioId, int categoriaId) {
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Categoría no encontrada: " + categoriaId
+                ));
+
+        return examenRepository.findByCreadorIdAndCategoriaId(usuarioId, categoriaId).stream()
+                .map(this::mapearAResumenDTO)
+                .toList();
+    }
+
     private void validarExamenRequest(ExamenRequestDTO dto) {
         if (dto == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El cuerpo de la solicitud es obligatorio");
@@ -218,6 +232,16 @@ public class GestorExamen {
                 examen.getCategoriaId(),
                 examen.getCreadoEn(),
                 preguntas
+        );
+    }
+
+    private ExamenResumenDTO mapearAResumenDTO(Examen examen) {
+        return new ExamenResumenDTO(
+                examen.getId(),
+                examen.getTitulo(),
+                examen.getDescripcion(),
+                examen.getSlug(),
+                examen.getCreadoEn()
         );
     }
 

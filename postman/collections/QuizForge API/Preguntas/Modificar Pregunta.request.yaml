@@ -1,0 +1,25 @@
+$kind: http-request
+name: Modificar Pregunta Multiple Choice
+url: "{{baseurl}}/api/preguntas/1"
+method: PUT
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "texto": "¿En qué año cayó el muro de Berlín (modificado)?",
+      "opciones": ["1987", "1989", "1991", "1993"],
+      "respuestaCorrecta": "1989"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Pregunta modificada exitosamente");
+      } else {
+          console.log("Error al modificar pregunta: " + pm.response.code);
+      }
+    language: text/javascript
+order: 6000

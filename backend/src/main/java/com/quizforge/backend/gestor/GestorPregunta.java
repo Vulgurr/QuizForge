@@ -5,6 +5,7 @@ import com.quizforge.backend.dto.PreguntaDTO;
 import com.quizforge.backend.dto.PreguntaDesarrolloDeterministicoDTO;
 import com.quizforge.backend.dto.PreguntaDesarrolloNoDeterministicoDTO;
 import com.quizforge.backend.dto.PreguntaMultipleChoiceDTO;
+import com.quizforge.backend.dto.PreguntaUpdateDTO;
 import com.quizforge.backend.dto.PreguntaVerdaderoFalsoDTO;
 import com.quizforge.backend.model.Examen;
 import com.quizforge.backend.model.pregunta.Pregunta;
@@ -114,6 +115,28 @@ public class GestorPregunta {
                 .toList();
     }
 
+    @Transactional
+    public PreguntaDTO modificarPregunta(int preguntaId, PreguntaUpdateDTO dto, int usuarioId, String rol) {
+        validarPreguntaUpdateDTO(dto);
+
+        Pregunta pregunta = preguntaRepository.findById(preguntaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Pregunta no encontrada: " + preguntaId
+                ));
+
+        if (!gestorSeguridad.esPropietarioOAdmin(usuarioId, pregunta.getExamen().getCreadorId(), rol)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tenés permiso para modificar esta pregunta"
+            );
+        }
+
+        actualizarPreguntaDesdeDTO(pregunta, dto);
+        Pregunta preguntaActualizada = preguntaRepository.save(pregunta);
+        return mapearPreguntaADTO(preguntaActualizada);
+    }
+
     private void validarPreguntaCreateDTO(PreguntaCreateDTO dto) {
         if (dto == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DTO de pregunta no puede ser nulo");
@@ -153,6 +176,42 @@ public class GestorPregunta {
         }
     }
 
+    private void validarPreguntaUpdateDTO(PreguntaUpdateDTO dto) {
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El DTO de actualización no puede ser nulo");
+        }
+        if (dto.texto() == null || dto.texto().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El texto de la pregunta es obligatorio");
+        }
+        validarCamposEspecificosUpdate(dto);
+    }
+
+    private void validarCamposEspecificosUpdate(PreguntaUpdateDTO dto) {
+        switch (dto) {
+            case PreguntaUpdateDTO.PreguntaUpdateMultipleChoiceDTO mc -> {
+                if (mc.opciones() == null || mc.opciones().isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Las opciones son obligatorias para MULTIPLE_CHOICE");
+                }
+                if (mc.respuestaCorrecta() == null || mc.respuestaCorrecta().isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La respuesta correcta es obligatoria para MULTIPLE_CHOICE");
+                }
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateVerdaderoFalsoDTO vf -> {
+                // No hay campos adicionales para validar
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateDesarrolloDeterministicoDTO dd -> {
+                if (dd.respuestaEsperadaExacta() == null || dd.respuestaEsperadaExacta().isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La respuesta esperada es obligatoria para DESARROLLO_DETERMINISTICO");
+                }
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateDesarrolloNoDeterministicoDTO dn -> {
+                if (dn.rubricaEvaluacion() == null || dn.rubricaEvaluacion().isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La rúbrica de evaluación es obligatoria para DESARROLLO_NO_DETERMINISTICO");
+                }
+            }
+        }
+    }
+
     private Pregunta crearPreguntaDesdeDTO(PreguntaCreateDTO dto) {
         return switch (dto) {
             case PreguntaMultipleChoiceDTO mc -> {
@@ -181,6 +240,38 @@ public class GestorPregunta {
                 yield pregunta;
             }
         };
+    }
+
+    private void actualizarPreguntaDesdeDTO(Pregunta pregunta, PreguntaUpdateDTO dto) {
+        pregunta.setTexto(dto.texto().trim());
+
+        switch (dto) {
+            case PreguntaUpdateDTO.PreguntaUpdateMultipleChoiceDTO mc -> {
+                if (!(pregunta instanceof PreguntaMultipleChoice mcPregunta)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pregunta incompatible");
+                }
+                mcPregunta.setOpciones(mc.opciones());
+                mcPregunta.setRespuestaCorrecta(mc.respuestaCorrecta().trim());
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateVerdaderoFalsoDTO vf -> {
+                if (!(pregunta instanceof PreguntaVerdaderoOFalso vfPregunta)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pregunta incompatible");
+                }
+                vfPregunta.setRespuestaCorrecta(vf.respuestaCorrecta());
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateDesarrolloDeterministicoDTO dd -> {
+                if (!(pregunta instanceof PreguntaDesarrolloDeterministica ddPregunta)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pregunta incompatible");
+                }
+                ddPregunta.setRespuestaEsperadaExacta(dd.respuestaEsperadaExacta().trim());
+            }
+            case PreguntaUpdateDTO.PreguntaUpdateDesarrolloNoDeterministicoDTO dn -> {
+                if (!(pregunta instanceof PreguntaDesarrolloNoDeterministica dnPregunta)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de pregunta incompatible");
+                }
+                dnPregunta.setRubricaEvaluacion(dn.rubricaEvaluacion().trim());
+            }
+        }
     }
 
     private PreguntaDTO mapearPreguntaADTO(Pregunta pregunta) {

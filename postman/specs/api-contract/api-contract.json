@@ -1,0 +1,668 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "api-contract",
+    "version": "1.0.0",
+    "description": "Colección de requests para testing manual de la API de QuizForge"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/api/auth/registrar": {
+      "post": {
+        "summary": "Register",
+        "responses": {},
+        "tags": [
+          "Login"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "email": "usuario@ejemplo.com",
+                "password": "tuPassword123"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login",
+        "responses": {},
+        "tags": [
+          "Login"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "email": "usuario@ejemplo.com",
+                "password": "tuPassword123"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categorias": {
+      "post": {
+        "summary": "Crear Categoria",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Categorias"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  },
+                  "descripcion": {
+                    "type": "string"
+                  },
+                  "apodos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "nombre": "Matemáticas",
+                "descripcion": "Categoría de matemáticas",
+                "apodos": [
+                  "math",
+                  "mat"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Listar Categorias",
+        "responses": {},
+        "tags": [
+          "Categorias"
+        ]
+      }
+    },
+    "/api/categorias/2": {
+      "delete": {
+        "summary": "Eliminar Categoria",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Categorias"
+        ]
+      }
+    },
+    "/api/categorias/mis-categorias": {
+      "get": {
+        "summary": "Listar Mis Categorias",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Categorias"
+        ]
+      }
+    },
+    "/api/categorias/matematicas/examenes": {
+      "get": {
+        "summary": "Obtener Examenes Por Categoria",
+        "responses": {},
+        "tags": [
+          "Categorias"
+        ]
+      }
+    },
+    "/api/examenes": {
+      "post": {
+        "summary": "Crear Examen VoF",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Examenes"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "titulo": {
+                    "type": "string"
+                  },
+                  "descripcion": {
+                    "type": "string"
+                  },
+                  "categoriaId": {
+                    "type": "integer"
+                  },
+                  "preguntas": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "tipo": {
+                          "type": "string"
+                        },
+                        "texto": {
+                          "type": "string"
+                        },
+                        "respuestaCorrecta": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "titulo": "Examen de Álgebra",
+                "descripcion": "Examen básico de álgebra",
+                "categoriaId": 1,
+                "preguntas": [
+                  {
+                    "tipo": "VERDADERO_FALSO",
+                    "texto": "2 + 2 = 4",
+                    "respuestaCorrecta": true
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/examenes/inteligencia-artificial/examen-de-algebra-1": {
+      "get": {
+        "summary": "Obtener Examen",
+        "responses": {},
+        "tags": [
+          "Examenes"
+        ]
+      }
+    },
+    "/api/examenes/1": {
+      "delete": {
+        "summary": "Eliminar Examen",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Examenes"
+        ]
+      }
+    },
+    "/api/examenes/1/corregir": {
+      "post": {
+        "summary": "Corregir Examen",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Examenes"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "respuestas": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "preguntaId": {
+                          "type": "integer"
+                        },
+                        "respuesta": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "respuestas": [
+                  {
+                    "preguntaId": 1,
+                    "respuesta": "false"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas": {
+      "post": {
+        "summary": "Crear Pregunta Multiple Choice",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tipo": {
+                    "type": "string"
+                  },
+                  "texto": {
+                    "type": "string"
+                  },
+                  "opciones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "utc-millisec"
+                    }
+                  },
+                  "respuestaCorrecta": {
+                    "type": "string",
+                    "format": "utc-millisec"
+                  },
+                  "examenId": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "tipo": "MULTIPLE_CHOICE",
+                "texto": "¿En qué año cayó el muro de Berlín?",
+                "opciones": [
+                  "1987",
+                  "1989",
+                  "1991",
+                  "1993"
+                ],
+                "respuestaCorrecta": "1989",
+                "examenId": 2
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas/masa": {
+      "post": {
+        "summary": "Crear Preguntas en Masa",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tipo": {
+                      "type": "string"
+                    },
+                    "texto": {
+                      "type": "string"
+                    },
+                    "opciones": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "respuestaCorrecta": {
+                      "type": "string"
+                    },
+                    "examenId": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "example": [
+                {
+                  "tipo": "MULTIPLE_CHOICE",
+                  "texto": "¿Cuál es el planeta más grande del sistema solar?",
+                  "opciones": [
+                    "Tierra",
+                    "Marte",
+                    "Júpiter",
+                    "Saturno"
+                  ],
+                  "respuestaCorrecta": "Júpiter",
+                  "examenId": 1
+                },
+                {
+                  "tipo": "VERDADERO_FALSO",
+                  "texto": "El agua hierve a 100°C a nivel del mar",
+                  "respuestaCorrecta": true,
+                  "examenId": 1
+                },
+                {
+                  "tipo": "DESARROLLO_DETERMINISTICO",
+                  "texto": "¿Cuánto es 2 + 2?",
+                  "respuestaEsperadaExacta": "4",
+                  "examenId": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas/1": {
+      "delete": {
+        "summary": "Eliminar Pregunta",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ]
+      },
+      "put": {
+        "summary": "Modificar Pregunta Multiple Choice",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "texto": {
+                    "type": "string"
+                  },
+                  "opciones": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "utc-millisec"
+                    }
+                  },
+                  "respuestaCorrecta": {
+                    "type": "string",
+                    "format": "utc-millisec"
+                  }
+                }
+              },
+              "example": {
+                "texto": "¿En qué año cayó el muro de Berlín (modificado)?",
+                "opciones": [
+                  "1987",
+                  "1989",
+                  "1991",
+                  "1993"
+                ],
+                "respuestaCorrecta": "1989"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas/examen/2": {
+      "get": {
+        "summary": "Listar Preguntas por Examen",
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ]
+      }
+    },
+    "/api/preguntas/2": {
+      "put": {
+        "summary": "Modificar Pregunta Verdadero Falso",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "texto": {
+                    "type": "string"
+                  },
+                  "respuestaCorrecta": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "example": {
+                "texto": "¿La Tierra es plana (modificado)?",
+                "respuestaCorrecta": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas/3": {
+      "put": {
+        "summary": "Modificar Pregunta Desarrollo Deterministico",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "texto": {
+                    "type": "string"
+                  },
+                  "respuestaEsperadaExacta": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "texto": "Explica el concepto de polimorfismo (modificado)",
+                "respuestaEsperadaExacta": "El polimorfismo es la capacidad de un objeto para tomar muchas formas"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/preguntas/4": {
+      "put": {
+        "summary": "Modificar Pregunta Desarrollo No Deterministico",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Bearer {{jwt_token}}"
+          }
+        ],
+        "responses": {},
+        "tags": [
+          "Preguntas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "texto": {
+                    "type": "string"
+                  },
+                  "rubricaEvaluacion": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "texto": "Describe los patrones de diseño más importantes (modificado)",
+                "rubricaEvaluacion": "Se evaluará la profundidad del análisis y la correcta identificación de patrones"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

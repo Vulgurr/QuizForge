@@ -1,8 +1,12 @@
 package com.quizforge.backend.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quizforge.backend.controller.ExamenController;
+import com.quizforge.backend.dto.CorreccionRequestDTO;
+import com.quizforge.backend.dto.CorreccionResponseDTO;
 import com.quizforge.backend.dto.ExamenRequestDTO;
 import com.quizforge.backend.dto.PreguntaMultipleChoiceDTO;
+import com.quizforge.backend.dto.RespuestaClienteDTO;
+import com.quizforge.backend.gestor.GestorCorreccion;
 import com.quizforge.backend.gestor.GestorExamen;
 import com.quizforge.backend.gestor.GestorSeguridad;
 import com.quizforge.backend.security.RateLimitInterceptor;
@@ -19,9 +23,11 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ExamenController.class)
@@ -39,6 +45,9 @@ class ExamenControllerTest {
 
     @MockitoBean
     private GestorSeguridad gestorSeguridad;
+
+    @MockitoBean
+    private GestorCorreccion gestorCorreccion;
 
     @MockitoBean
     private RateLimitInterceptor rateLimitInterceptor;
@@ -79,5 +88,40 @@ class ExamenControllerTest {
 
         // Verificamos que se llamó a la lógica de negocio
         verify(gestorExamen).crearExamen(any(ExamenRequestDTO.class), anyInt());
+    }
+
+    @Test
+    @WithMockUser(username = "testUser", roles = {"USER"})
+    void corregirExamen_respuestasValidas_retornaStatusOk() throws Exception {
+        // Arrange
+        CorreccionResponseDTO responseDTO = new CorreccionResponseDTO(
+                1,
+                8.5,
+                10,
+                8
+        );
+
+        CorreccionRequestDTO requestDTO = new CorreccionRequestDTO(
+                List.of(
+                        new RespuestaClienteDTO(1, "París"),
+                        new RespuestaClienteDTO(2, "falso")
+                )
+        );
+
+        when(gestorCorreccion.calcularNotaExamen(any(CorreccionRequestDTO.class), anyInt()))
+                .thenReturn(responseDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/examenes/1/corregir")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.examenId").value(1))
+                .andExpect(jsonPath("$.puntajeFinal").value(8.5))
+                .andExpect(jsonPath("$.totalPreguntas").value(10))
+                .andExpect(jsonPath("$.correctas").value(8));
+
+        verify(gestorCorreccion).calcularNotaExamen(any(CorreccionRequestDTO.class), eq(1));
     }
 }

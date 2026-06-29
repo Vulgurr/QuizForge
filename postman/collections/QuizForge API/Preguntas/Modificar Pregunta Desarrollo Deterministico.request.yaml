@@ -1,0 +1,24 @@
+$kind: http-request
+name: Modificar Pregunta Desarrollo Deterministico
+url: "{{baseurl}}/api/preguntas/3"
+method: PUT
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "texto": "Explica el concepto de polimorfismo (modificado)",
+      "respuestaEsperadaExacta": "El polimorfismo es la capacidad de un objeto para tomar muchas formas"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Pregunta modificada exitosamente");
+      } else {
+          console.log("Error al modificar pregunta: " + pm.response.code);
+      }
+    language: text/javascript
+order: 6002
