@@ -184,4 +184,108 @@ class GestorPreguntaTest {
 
         verify(preguntaRepository, times(1)).findByExamenId(examenId);
     }
+
+    @Test
+    void modificarPregunta_usuarioEsPropietario_modificaExitosamente() {
+        // Arrange
+        int preguntaId = 10;
+        int usuarioId = 1;
+        String rol = "USER";
+
+        Examen examen = new Examen();
+        examen.setId(50);
+        examen.setCreadorId(usuarioId);
+
+        PreguntaMultipleChoice preguntaExistente = new PreguntaMultipleChoice();
+        preguntaExistente.setId(preguntaId);
+        preguntaExistente.setTexto("Pregunta original");
+        preguntaExistente.setOpciones(List.of("A", "B"));
+        preguntaExistente.setRespuestaCorrecta("A");
+        preguntaExistente.setExamen(examen);
+
+        PreguntaUpdateDTO updateDTO = new PreguntaUpdateDTO.PreguntaUpdateMultipleChoiceDTO(
+                "Pregunta modificada",
+                List.of("A", "B", "C"),
+                "B"
+        );
+
+        when(preguntaRepository.findById(preguntaId)).thenReturn(Optional.of(preguntaExistente));
+        when(gestorSeguridad.esPropietarioOAdmin(usuarioId, examen.getCreadorId(), rol)).thenReturn(true);
+        when(preguntaRepository.save(any(PreguntaMultipleChoice.class))).thenReturn(preguntaExistente);
+
+        // Act
+        PreguntaDTO resultado = gestorPregunta.modificarPregunta(preguntaId, updateDTO, usuarioId, rol);
+
+        // Assert
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.texto()).isEqualTo("Pregunta modificada");
+
+        verify(preguntaRepository, times(1)).findById(preguntaId);
+        verify(gestorSeguridad, times(1)).esPropietarioOAdmin(usuarioId, examen.getCreadorId(), rol);
+        verify(preguntaRepository, times(1)).save(any(PreguntaMultipleChoice.class));
+    }
+
+    @Test
+    void modificarPregunta_usuarioNoAutorizado_lanzaExcepcion() {
+        // Arrange
+        int preguntaId = 10;
+        int usuarioIdIntruso = 99;
+        String rol = "USER";
+
+        Examen examen = new Examen();
+        examen.setId(50);
+        examen.setCreadorId(1);
+
+        PreguntaMultipleChoice preguntaExistente = new PreguntaMultipleChoice();
+        preguntaExistente.setId(preguntaId);
+        preguntaExistente.setExamen(examen);
+
+        PreguntaUpdateDTO updateDTO = new PreguntaUpdateDTO.PreguntaUpdateMultipleChoiceDTO(
+                "Pregunta modificada",
+                List.of("A", "B"),
+                "A"
+        );
+
+        when(preguntaRepository.findById(preguntaId)).thenReturn(Optional.of(preguntaExistente));
+        when(gestorSeguridad.esPropietarioOAdmin(usuarioIdIntruso, examen.getCreadorId(), rol)).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> gestorPregunta.modificarPregunta(preguntaId, updateDTO, usuarioIdIntruso, rol))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No tenés permiso para modificar esta pregunta");
+
+        verify(preguntaRepository, never()).save(any(Pregunta.class));
+    }
+
+    @Test
+    void modificarPregunta_tipoIncompatible_lanzaExcepcion() {
+        // Arrange
+        int preguntaId = 10;
+        int usuarioId = 1;
+        String rol = "USER";
+
+        Examen examen = new Examen();
+        examen.setId(50);
+        examen.setCreadorId(usuarioId);
+
+        PreguntaVerdaderoOFalso preguntaExistente = new PreguntaVerdaderoOFalso();
+        preguntaExistente.setId(preguntaId);
+        preguntaExistente.setExamen(examen);
+
+        PreguntaUpdateDTO updateDTO = new PreguntaUpdateDTO.PreguntaUpdateMultipleChoiceDTO(
+                "Pregunta modificada",
+                List.of("A", "B"),
+                "A"
+        );
+
+        when(preguntaRepository.findById(preguntaId)).thenReturn(Optional.of(preguntaExistente));
+        when(gestorSeguridad.esPropietarioOAdmin(usuarioId, examen.getCreadorId(), rol)).thenReturn(true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> gestorPregunta.modificarPregunta(preguntaId, updateDTO, usuarioId, rol))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Tipo de pregunta incompatible");
+
+        verify(preguntaRepository, never()).save(any(Pregunta.class));
+    }
 }

@@ -219,4 +219,80 @@ class GestorExamenTest {
         verify(categoriaRepository, never()).findBySlug(anyString());
         verify(examenRepository, never()).findBySlugAndCategoriaId(anyString(), anyInt());
     }
+
+    @Test
+    void listarMisExamenesPorCategoria_usuarioConExamenes_retornaListaDeResumenes() {
+        // Arrange
+        int usuarioId = 1;
+        int categoriaId = 10;
+
+        Categoria categoria = new Categoria();
+        categoria.setId(categoriaId);
+
+        Examen examen1 = new Examen();
+        examen1.setId(100);
+        examen1.setTitulo("Java Básico");
+        examen1.setSlug("java-basico");
+        examen1.setCreadoEn(java.time.LocalDateTime.now());
+
+        Examen examen2 = new Examen();
+        examen2.setId(101);
+        examen2.setTitulo("Java Avanzado");
+        examen2.setSlug("java-avanzado");
+        examen2.setCreadoEn(java.time.LocalDateTime.now());
+
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(examenRepository.findByCreadorIdAndCategoriaId(usuarioId, categoriaId))
+                .thenReturn(List.of(examen1, examen2));
+
+        // Act
+        List<ExamenResumenDTO> resultados = gestorExamen.listarMisExamenesPorCategoria(usuarioId, categoriaId);
+
+        // Assert
+        assertThat(resultados).hasSize(2);
+        assertThat(resultados.get(0).titulo()).isEqualTo("Java Básico");
+        assertThat(resultados.get(1).titulo()).isEqualTo("Java Avanzado");
+
+        verify(categoriaRepository, times(1)).findById(categoriaId);
+        verify(examenRepository, times(1)).findByCreadorIdAndCategoriaId(usuarioId, categoriaId);
+    }
+
+    @Test
+    void listarMisExamenesPorCategoria_categoriaNoExistente_lanzaExcepcion() {
+        // Arrange
+        int usuarioId = 1;
+        int categoriaId = 999;
+
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatThrownBy(() -> gestorExamen.listarMisExamenesPorCategoria(usuarioId, categoriaId))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Categoría no encontrada");
+
+        verify(examenRepository, never()).findByCreadorIdAndCategoriaId(anyInt(), anyInt());
+    }
+
+    @Test
+    void listarMisExamenesPorCategoria_usuarioSinExamenes_retornaListaVacia() {
+        // Arrange
+        int usuarioId = 99;
+        int categoriaId = 10;
+
+        Categoria categoria = new Categoria();
+        categoria.setId(categoriaId);
+
+        when(categoriaRepository.findById(categoriaId)).thenReturn(Optional.of(categoria));
+        when(examenRepository.findByCreadorIdAndCategoriaId(usuarioId, categoriaId))
+                .thenReturn(List.of());
+
+        // Act
+        List<ExamenResumenDTO> resultados = gestorExamen.listarMisExamenesPorCategoria(usuarioId, categoriaId);
+
+        // Assert
+        assertThat(resultados).isEmpty();
+
+        verify(categoriaRepository, times(1)).findById(categoriaId);
+        verify(examenRepository, times(1)).findByCreadorIdAndCategoriaId(usuarioId, categoriaId);
+    }
 }
