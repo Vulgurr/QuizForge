@@ -1,7 +1,11 @@
 package com.quizforge.backend.controller;
 
+import com.quizforge.backend.dto.CorreccionRequestDTO;
+import com.quizforge.backend.dto.CorreccionResponseDTO;
 import com.quizforge.backend.dto.ExamenRequestDTO;
+import com.quizforge.backend.dto.ExamenResumenDTO;
 import com.quizforge.backend.dto.ExamenResponseDTO;
+import com.quizforge.backend.gestor.GestorCorreccion;
 import com.quizforge.backend.gestor.GestorExamen;
 import com.quizforge.backend.gestor.GestorSeguridad;
 import org.springframework.http.HttpStatus;
@@ -12,8 +16,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/examenes")
@@ -21,10 +28,12 @@ public class ExamenController {
 
     private final GestorExamen gestorExamen;
     private final GestorSeguridad gestorSeguridad;
+    private final GestorCorreccion gestorCorreccion;
 
-    public ExamenController(GestorExamen gestorExamen, GestorSeguridad gestorSeguridad) {
+    public ExamenController(GestorExamen gestorExamen, GestorSeguridad gestorSeguridad, GestorCorreccion gestorCorreccion) {
         this.gestorExamen = gestorExamen;
         this.gestorSeguridad = gestorSeguridad;
+        this.gestorCorreccion = gestorCorreccion;
     }
 
     @PostMapping
@@ -55,5 +64,23 @@ public class ExamenController {
     ) {
         ExamenResponseDTO respuesta = gestorExamen.obtenerPorSlugs(categoriaSlug, examenSlug);
         return ResponseEntity.ok(respuesta);
+    }
+
+    @PostMapping("/{examenId}/corregir")
+    public ResponseEntity<CorreccionResponseDTO> corregirExamen(
+            @PathVariable int examenId,
+            @RequestBody CorreccionRequestDTO dto
+    ) {
+        CorreccionResponseDTO respuesta = gestorCorreccion.calcularNotaExamen(dto, examenId);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @GetMapping("/mis-examenes")
+    public ResponseEntity<List<ExamenResumenDTO>> listarMisExamenesPorCategoria(
+            @RequestParam int categoriaId,
+            @RequestHeader("Authorization") String token
+    ) {
+        int usuarioId = gestorSeguridad.extraerUsuarioId(token);
+        return ResponseEntity.ok(gestorExamen.listarMisExamenesPorCategoria(usuarioId, categoriaId));
     }
 }

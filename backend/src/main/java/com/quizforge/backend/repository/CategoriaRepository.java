@@ -16,4 +16,7 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
 
     @Query("SELECT DISTINCT c FROM Categoria c JOIN c.apodos a WHERE a = :apodo")
     List<Categoria> findByApodo(@Param("apodo") String apodo);
+
+    @Query("SELECT DISTINCT c FROM Categoria c JOIN Examen e ON c.id = e.categoriaId WHERE e.creadorId = :usuarioId")
+    List<Categoria> findCategoriasConExamenesDelUsuario(@Param("usuarioId") int usuarioId);
 }

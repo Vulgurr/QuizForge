@@ -56,4 +56,12 @@ public class CategoriaController {
     ) {
         return ResponseEntity.ok(gestorCategoria.obtenerExamenesPorCategoria(categoriaSlug));
     }
+
+    @GetMapping("/mis-categorias")
+    public ResponseEntity<List<CategoriaResponseDTO>> listarMisCategorias(
+            @RequestHeader("Authorization") String token
+    ) {
+        int usuarioId = gestorSeguridad.extraerUsuarioId(token);
+        return ResponseEntity.ok(gestorCategoria.listarCategoriasPorCreador(usuarioId));
+    }
 }
