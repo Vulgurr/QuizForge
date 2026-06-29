@@ -21,4 +21,4 @@ scripts:
           console.log("Error al crear categoría: " + pm.response.code);
       }
     language: text/javascript
-order: 2000
+order: 171

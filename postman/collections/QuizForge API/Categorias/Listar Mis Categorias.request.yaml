@@ -1,0 +1,19 @@
+$kind: http-request
+name: Listar Mis Categorias
+url: "{{baseurl}}/api/categorias/mis-categorias"
+method: GET
+headers:
+  Authorization: Bearer {{jwt_token}}
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Categorías listadas exitosamente");
+          var json = pm.response.json();
+          console.log("Cantidad de categorías: " + json.length);
+      } else {
+          console.log("Error al listar categorías: " + pm.response.code);
+      }
+    language: text/javascript
+order: 4000

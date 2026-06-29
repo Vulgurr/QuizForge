@@ -1,0 +1,31 @@
+$kind: http-request
+name: Corregir Examen
+url: "{{baseurl}}/api/examenes/1/corregir"
+method: POST
+headers:
+  Authorization: Bearer {{jwt_token}}
+body:
+  type: json
+  content: |-
+    {
+      "respuestas": [
+        {
+          "preguntaId": 1,
+          "respuesta": "false"
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      // Verificar respuesta
+      if (pm.response.code === 200) {
+          console.log("Examen corregido exitosamente");
+          var json = pm.response.json();
+          console.log("Puntaje final: " + json.puntajeFinal);
+          console.log("Correctas: " + json.correctas + "/" + json.totalPreguntas);
+      } else {
+          console.log("Error al corregir examen: " + pm.response.code);
+      }
+    language: text/javascript
+order: 7000
