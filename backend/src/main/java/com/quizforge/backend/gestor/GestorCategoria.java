@@ -66,6 +66,14 @@ public class GestorCategoria {
             );
         }
 
+        long cantidadExamenes = examenRepository.countByCategoriaId(categoriaId);
+        if (cantidadExamenes > 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se puede borrar una categoría que contiene exámenes"
+            );
+        }
+
         categoriaRepository.deleteById(categoriaId);
     }
 
@@ -98,6 +106,13 @@ public class GestorCategoria {
         }
 
         return categoriaRepository.findByApodo(apodo.trim().toLowerCase(Locale.ROOT));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoriaResponseDTO> listarCategoriasPorCreador(int usuarioId) {
+        return categoriaRepository.findCategoriasConExamenesDelUsuario(usuarioId).stream()
+                .map(this::mapearAResponseDTO)
+                .toList();
     }
 
     private void validarSlug(String slug) {
