@@ -8,8 +8,10 @@ import com.quizforge.backend.dto.ExamenResponseDTO;
 import com.quizforge.backend.gestor.GestorCorreccion;
 import com.quizforge.backend.gestor.GestorExamen;
 import com.quizforge.backend.gestor.GestorSeguridad;
+import com.quizforge.backend.model.Usuario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +36,10 @@ public class ExamenController {
         this.gestorExamen = gestorExamen;
         this.gestorSeguridad = gestorSeguridad;
         this.gestorCorreccion = gestorCorreccion;
+    }
+    @GetMapping("/{slug}")
+    public ResponseEntity<ExamenResponseDTO> obtenerExamenPorSlug(@PathVariable String slug) {
+        return ResponseEntity.ok(gestorExamen.obtenerExamenPorSlug(slug));
     }
 
     @PostMapping
@@ -76,11 +82,10 @@ public class ExamenController {
     }
 
     @GetMapping("/mis-examenes")
-    public ResponseEntity<List<ExamenResumenDTO>> listarMisExamenesPorCategoria(
-            @RequestParam int categoriaId,
+    public ResponseEntity<List<ExamenResponseDTO>> listarMisExamenes(
             @RequestHeader("Authorization") String token
     ) {
         int usuarioId = gestorSeguridad.extraerUsuarioId(token);
-        return ResponseEntity.ok(gestorExamen.listarMisExamenesPorCategoria(usuarioId, categoriaId));
+        return ResponseEntity.ok(gestorExamen.obtenerMisExamenes(usuarioId));
     }
 }

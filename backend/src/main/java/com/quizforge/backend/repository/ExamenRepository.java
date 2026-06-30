@@ -12,6 +12,7 @@ public interface ExamenRepository extends JpaRepository<Examen, Integer> {
 
     Optional<Examen> findBySlug(String slug);
 
+    List<Examen> findByCreadorId(int creadorId);
     Optional<Examen> findBySlugAndCategoriaId(String slug, int categoriaId);
 
     List<Examen> findByCategoriaId(int categoriaId);

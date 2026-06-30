@@ -51,6 +51,16 @@ public class GestorCategoria {
         return mapearAResponseDTO(categoriaRepository.save(categoria));
     }
 
+
+
+    @Transactional(readOnly = true)
+    public CategoriaResponseDTO obtenerCategoriaPorSlug(String slug) {
+        Categoria categoria = categoriaRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+
+        return mapearAResponseDTO(categoria);
+    }
+
     @Transactional
     public void eliminarCategoria(int categoriaId, int usuarioId, String rol) {
         Categoria categoria = categoriaRepository.findById(categoriaId)
@@ -100,12 +110,14 @@ public class GestorCategoria {
     }
 
     @Transactional(readOnly = true)
-    public List<Categoria> buscarPorApodo(String apodo) {
-        if (apodo == null || apodo.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El apodo es obligatorio");
-        }
+    public List<CategoriaResponseDTO> buscarPorApodo(String apodo) {
+        // 1. Buscamos en la base de datos (asegurate de tener este método en tu repositorio)
+        List<Categoria> resultados = categoriaRepository.findByApodoContainingIgnoreCase(apodo);
 
-        return categoriaRepository.findByApodo(apodo.trim().toLowerCase(Locale.ROOT));
+        // 2. Mapeamos a DTO. Si "resultados" está vacío, el stream devolverá un [] automáticamente.
+        return resultados.stream()
+                .map(this::mapearAResponseDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
