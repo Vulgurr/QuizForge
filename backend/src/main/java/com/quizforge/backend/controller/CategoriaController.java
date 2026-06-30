@@ -22,6 +22,16 @@ public class CategoriaController {
         this.gestorCategoria = gestorCategoria;
         this.gestorSeguridad = gestorSeguridad;
     }
+    @GetMapping("/buscar")
+    public ResponseEntity<List<CategoriaResponseDTO>> buscarCategorias(@RequestParam String apodo) {
+        // Al delegar al Gestor, nos aseguramos de que la respuesta sea siempre una lista (llena o vacía)
+        return ResponseEntity.ok(gestorCategoria.buscarPorApodo(apodo));
+    }
+    @GetMapping("/{slug}")
+    public ResponseEntity<CategoriaResponseDTO> obtenerCategoriaPorSlug(@PathVariable String slug) {
+        // Delegamos la lógica al Gestor como establecen las reglas de tu arquitectura
+        return ResponseEntity.ok(gestorCategoria.obtenerCategoriaPorSlug(slug));
+    }
 
     @PostMapping
     public ResponseEntity<CategoriaResponseDTO> crearCategoria(

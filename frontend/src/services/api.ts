@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +25,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Usamos getState() para disparar el logout fuera de un componente
       useAuthStore.getState().logout();
+      // Redirigir a login podría hacerse aquí, pero mejor manejarlo en componentes
     }
     return Promise.reject(error);
   }

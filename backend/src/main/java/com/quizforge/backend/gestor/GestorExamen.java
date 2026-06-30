@@ -10,6 +10,7 @@ import com.quizforge.backend.dto.PreguntaDesarrolloDeterministicoDTO;
 import com.quizforge.backend.dto.PreguntaDesarrolloNoDeterministicoDTO;
 import com.quizforge.backend.model.Categoria;
 import com.quizforge.backend.model.Examen;
+import com.quizforge.backend.model.Usuario;
 import com.quizforge.backend.model.pregunta.Pregunta;
 import com.quizforge.backend.model.pregunta.PreguntaMultipleChoice;
 import com.quizforge.backend.model.pregunta.PreguntaVerdaderoOFalso;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class GestorExamen {
@@ -125,6 +127,25 @@ public class GestorExamen {
         return examenRepository.findByCreadorIdAndCategoriaId(usuarioId, categoriaId).stream()
                 .map(this::mapearAResumenDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExamenResponseDTO> obtenerMisExamenes(int usuarioId) {
+        // Usamos directamente el ID que vino del controlador
+        List<Examen> misExamenes = examenRepository.findByCreadorId(usuarioId);
+
+        return misExamenes.stream()
+                .map(this::mapearAResponseDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ExamenResponseDTO obtenerExamenPorSlug(String slug) {
+        Examen examen = examenRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Examen no encontrado"));
+
+        // Reutilizamos el método que ya tenías armado para convertir la entidad al DTO completo (con preguntas)
+        return mapearAResponseDTO(examen);
     }
 
     private void validarExamenRequest(ExamenRequestDTO dto) {
