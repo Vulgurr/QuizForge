@@ -1,7 +1,7 @@
 # Árbol de Componentes: QuizForge Frontend
 
 - `AppRouter` (Maneja las rutas web)
-    - `Navbar` (Smart: Contiene la barra de búsqueda global y lee el estado de sesión)
+    - `Navbar` (Smart: Contiene la barra de búsqueda global y lee el estado de sesión. Incluye modo claro/oscuro)
         - `BuscadorCategorias` (Smart: Hace fetch a /api/categorias/buscar?apodo=...)
         - `UserMenuDropdown` (Dumb: Opciones de Login o link al Dashboard si está logueado)
 
