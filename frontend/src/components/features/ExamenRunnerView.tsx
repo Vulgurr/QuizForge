@@ -102,121 +102,81 @@ function ExamenRunnerView() {
 
           const result = await examenService.corregir(examen.id, { respuestas: respuestasArray });
 
-
           submitExam(result);
           setShowResultModal(true);
-        } catch (err) {
-          // ...
+        } catch (err: any) {
+          // Usamos el setError original que sí existe en este archivo
+          console.error('Error enviando examen:', err);
+          setError('Ocurrió un error al enviar las respuestas. Por favor, intenta de nuevo.');
+        } finally {
+          setIsSubmitting(false);
         }
       };
 
-  const handleNext = () => {
-    if (examen && currentIndex < examen.preguntas.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
+        const renderPregunta = (pregunta: any) => {
+            const currentAnswer = answers[pregunta.id];
 
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
-  const handleBackToCategories = () => {
-    resetQuiz();
-    navigate(`/categorias/${examen?.categoriaId ? '' : ''}`);
-  };
-
-  const renderPregunta = (pregunta: PreguntaConTipo) => {
-    const currentAnswer = answers[pregunta.id];
-
-    switch (pregunta.tipo) {
-      case 'MULTIPLE_CHOICE':
-        return (
-          <div className="space-y-3" data-testid={`pregunta-multiple-choice-${pregunta.id}`}>
-            {pregunta.opciones.map((opcion, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleAnswer(pregunta.id, opcion)}
-                disabled={isSubmitted}
-                className={`w-full text-left p-4 rounded-lg border-2 transition-colors ${
-                  currentAnswer === opcion
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                } ${isSubmitted ? 'cursor-not-allowed opacity-60' : ''}`}
-                data-testid={`opcion-${idx}`}
-              >
-                <div className="flex items-center">
-                  <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
-                    currentAnswer === opcion ? 'border-indigo-500' : 'border-gray-300'
-                  }`}>
-                    {currentAnswer === opcion && (
-                      <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                    )}
+            switch (pregunta.tipo) {
+              case 'MULTIPLE_CHOICE':
+                return (
+                  <div className="space-y-3">
+                    {pregunta.opciones?.map((opcion: string, index: number) => (
+                      <label key={index} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name={`pregunta-${pregunta.id}`}
+                          value={opcion}
+                          checked={currentAnswer === opcion}
+                          onChange={(e) => handleAnswer(pregunta.id, e.target.value)}
+                          disabled={isSubmitted}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">{opcion}</span>
+                      </label>
+                    ))}
                   </div>
-                  <span className="text-gray-900 dark:text-white">{opcion}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        );
+                );
 
-      case 'VERDADERO_FALSO':
-        return (
-          <div className="flex gap-4" data-testid={`pregunta-vf-${pregunta.id}`}>
-            <button
-              onClick={() => handleAnswer(pregunta.id, 'true')}
-              disabled={isSubmitted}
-              className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-                currentAnswer === 'true'
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-              } ${isSubmitted ? 'cursor-not-allowed opacity-60' : ''}`}
-              data-testid="opcion-verdadero"
-            >
-              <div className="flex items-center justify-center">
-                <CheckCircle className={`h-6 w-6 mr-2 ${currentAnswer === 'true' ? 'text-green-500' : 'text-gray-400'}`} />
-                <span className="text-gray-900 dark:text-white font-medium">Verdadero</span>
-              </div>
-            </button>
-            <button
-              onClick={() => handleAnswer(pregunta.id, 'false')}
-              disabled={isSubmitted}
-              className={`flex-1 p-4 rounded-lg border-2 transition-colors ${
-                currentAnswer === 'false'
-                  ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-              } ${isSubmitted ? 'cursor-not-allowed opacity-60' : ''}`}
-              data-testid="opcion-falso"
-            >
-              <div className="flex items-center justify-center">
-                <XCircle className={`h-6 w-6 mr-2 ${currentAnswer === 'false' ? 'text-red-500' : 'text-gray-400'}`} />
-                <span className="text-gray-900 dark:text-white font-medium">Falso</span>
-              </div>
-            </button>
-          </div>
-        );
+              case 'VERDADERO_FALSO':
+                return (
+                  <div className="space-y-3">
+                    {['Verdadero', 'Falso'].map((opcion) => (
+                      <label key={opcion} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                        <input
+                          type="radio"
+                          name={`pregunta-${pregunta.id}`}
+                          value={opcion}
+                          checked={currentAnswer === opcion}
+                          onChange={(e) => handleAnswer(pregunta.id, e.target.value)}
+                          disabled={isSubmitted}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">{opcion}</span>
+                      </label>
+                    ))}
+                  </div>
+                );
 
-      case 'DESARROLLO_DETERMINISTICO':
-      case 'DESARROLLO_NO_DETERMINISTICO':
-        return (
-          <div data-testid={`pregunta-desarrollo-${pregunta.id}`}>
-            <textarea
-              value={currentAnswer || ''}
-              onChange={(e) => handleAnswer(pregunta.id, e.target.value)}
-              disabled={isSubmitted}
-              rows={6}
-              className="w-full p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-              placeholder="Escribe tu respuesta aquí..."
-              data-testid="respuesta-desarrollo"
-            />
-          </div>
-        );
+              case 'DESARROLLO_DETERMINISTICO':
+              case 'DESARROLLO_NO_DETERMINISTICO':
+                return (
+                  <div data-testid={`pregunta-desarrollo-${pregunta.id}`}>
+                    <textarea
+                      value={currentAnswer || ''}
+                      onChange={(e) => handleAnswer(pregunta.id, e.target.value)}
+                      disabled={isSubmitted}
+                      rows={6}
+                      className="w-full p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                      placeholder="Escribe tu respuesta aquí..."
+                      data-testid="respuesta-desarrollo"
+                    />
+                  </div>
+                );
 
-      default:
-        return <div>Tipo de pregunta no soportado</div>;
-    }
-  };
+              default:
+                return <div>Tipo de pregunta no soportado</div>;
+            }
+          };
 
   if (isLoading) {
     return (
@@ -306,7 +266,7 @@ function ExamenRunnerView() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             {currentPregunta.texto}
           </h2>
-          
+
           {renderPregunta(currentPregunta)}
 
           {/* Navegación */}

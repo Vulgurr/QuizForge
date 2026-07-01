@@ -6,8 +6,7 @@ import { ChevronDown, Plus, Search } from 'lucide-react';
 interface CategoriaSelectorProps {
   selectedCategoriaId: number | null;
   onCategoriaSelect: (categoriaId: number | null) => void;
-  // Agregamos el slug como parámetro opcional a la firma
-  onCrearCategoria: (nombre: string, descripcion?: string, slug?: string) => Promise<CategoriaResponseDTO>;
+  onCrearCategoria: (nombre: string, descripcion?: string, apodosStr?: string) => Promise<CategoriaResponseDTO>;
   error?: string;
 }
 
@@ -23,9 +22,10 @@ function CategoriaSelector({
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
+  // Estados separados para evitar el problema de actualización de objetos
   const [newCategoriaNombre, setNewCategoriaNombre] = useState('');
   const [newCategoriaDescripcion, setNewCategoriaDescripcion] = useState('');
-  const [newCategoriaSlug, setNewCategoriaSlug] = useState(''); // <-- Nuevo estado para el slug
+  const [newCategoriaApodos, setNewCategoriaApodos] = useState('');
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -39,42 +39,33 @@ function CategoriaSelector({
         setIsLoading(false);
       }
     };
-
     fetchCategorias();
   }, []);
 
   const filteredCategorias = categorias.filter((cat) => {
-      const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase();
+    const matchNombre = cat.nombre.toLowerCase().includes(query);
+    const matchSlug = cat.slug?.toLowerCase().includes(query) || false;
+    const matchDesc = cat.descripcion?.toLowerCase().includes(query) || false;
+    const matchApodos = cat.apodos?.some(apodo => apodo.toLowerCase().includes(query)) || false;
 
-      const matchNombre = cat.nombre.toLowerCase().includes(query);
-      const matchSlug = cat.slug?.toLowerCase().includes(query) || false;
-      const matchDesc = cat.descripcion?.toLowerCase().includes(query) || false;
-
-      // Buscamos si ALGÚN apodo de la lista coincide con lo que el usuario está escribiendo
-      const matchApodos = cat.apodos?.some(apodo =>
-        apodo.toLowerCase().includes(query)
-      ) || false;
-
-      // Retorna true si encuentra coincidencia en cualquiera de los 4 campos
-      return matchNombre || matchSlug || matchDesc || matchApodos;
-    });
+    return matchNombre || matchSlug || matchDesc || matchApodos;
+  });
 
   const handleCrearCategoria = async () => {
     if (!newCategoriaNombre.trim()) return;
 
     try {
-      // Pasamos el slug nuevo al padre
       const nuevaCategoria = await onCrearCategoria(
         newCategoriaNombre.trim(),
         newCategoriaDescripcion.trim() || undefined,
-        newCategoriaSlug.trim() || undefined
+        newCategoriaApodos.trim() || undefined
       );
 
       setCategorias(prev => [...prev, nuevaCategoria]);
-
       setNewCategoriaNombre('');
       setNewCategoriaDescripcion('');
-      setNewCategoriaSlug('');
+      setNewCategoriaApodos('');
       setIsCreating(false);
       setIsOpen(false);
     } catch (err) {
@@ -95,7 +86,6 @@ function CategoriaSelector({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          data-testid="categoria-dropdown-button"
         >
           <span>
             {selectedCategoria ? selectedCategoria.nombre : 'Seleccionar categoría...'}
@@ -109,6 +99,7 @@ function CategoriaSelector({
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+
             {/* Buscador */}
             <div className="p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="relative">
@@ -119,23 +110,19 @@ function CategoriaSelector({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar por nombre, slug o descripción..."
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  data-testid="categoria-search-input"
                 />
               </div>
             </div>
 
-            {/* Opción crear nueva */}
             <button
               type="button"
               onClick={() => setIsCreating(true)}
               className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center text-indigo-600 dark:text-indigo-400"
-              data-testid="crear-categoria-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear nueva categoría
             </button>
 
-            {/* Formulario crear categoría */}
             {isCreating && (
               <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <div className="space-y-3">
@@ -149,23 +136,9 @@ function CategoriaSelector({
                       onChange={(e) => setNewCategoriaNombre(e.target.value)}
                       placeholder="Nombre de la categoría"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      data-testid="new-categoria-nombre"
                     />
                   </div>
-                  {/* NUEVO CAMPO: Slug */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Slug (URL amigable)
-                    </label>
-                    <input
-                      type="text"
-                      value={newCategoriaSlug}
-                      onChange={(e) => setNewCategoriaSlug(e.target.value)}
-                      placeholder="ejemplo: inteligencia-artificial"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      data-testid="new-categoria-slug"
-                    />
-                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Descripción (opcional)
@@ -176,16 +149,28 @@ function CategoriaSelector({
                       onChange={(e) => setNewCategoriaDescripcion(e.target.value)}
                       placeholder="Descripción breve"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      data-testid="new-categoria-descripcion"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Apodos (separados por comas)
+                    </label>
+                    <input
+                      type="text"
+                      value={newCategoriaApodos}
+                      onChange={(e) => setNewCategoriaApodos(e.target.value)}
+                      placeholder="Ej: mate, math, exactas"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  </div>
+
                   <div className="flex gap-2 mt-4">
                     <button
                       type="button"
                       onClick={handleCrearCategoria}
                       disabled={!newCategoriaNombre.trim()}
                       className="flex-1 px-3 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      data-testid="confirmar-crear-categoria"
                     >
                       Crear
                     </button>
@@ -195,10 +180,9 @@ function CategoriaSelector({
                         setIsCreating(false);
                         setNewCategoriaNombre('');
                         setNewCategoriaDescripcion('');
-                        setNewCategoriaSlug('');
+                        setNewCategoriaApodos('');
                       }}
                       className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
-                      data-testid="cancelar-crear-categoria"
                     >
                       Cancelar
                     </button>
@@ -207,7 +191,6 @@ function CategoriaSelector({
               </div>
             )}
 
-            {/* Lista de categorías */}
             {isLoading ? (
               <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-sm">
                 Cargando categorías...
@@ -230,7 +213,6 @@ function CategoriaSelector({
                       ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
                       : 'text-gray-900 dark:text-white'
                   }`}
-                  data-testid={`categoria-option-${categoria.id}`}
                 >
                   <div className="font-medium">{categoria.nombre}</div>
                   <div className="flex flex-col gap-1 mt-1">

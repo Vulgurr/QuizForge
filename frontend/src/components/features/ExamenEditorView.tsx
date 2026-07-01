@@ -104,26 +104,29 @@ function ExamenEditorView() {
       cargarExamen();
     }, [slug, setExamenId, setTitulo, setDescripcion, setCategoriaId, setPreguntas]);
     // Le agregamos el slug a los parámetros que recibimos del selector
-      const handleCrearCategoria = async (nombre: string, descripcion?: string, slug?: string) => {
-        try {
-          const categoriaRequest = {
-            nombre,
-            descripcion,
-            // Agregamos el slug al payload (si está vacío en el front, mandamos undefined)
-            slug: slug || undefined,
-          };
+      const handleCrearCategoria = async (nombre: string, descripcion?: string, apodosStr?: string) => {
+          try {
+            // 1. Convertimos el string separado por comas en un array limpio
+            const apodosArray = apodosStr
+              ? apodosStr.split(',').map(a => a.trim()).filter(a => a.length > 0)
+              : [];
 
-          // Asegurate de que tu CategoriaRequestDTO en ../../types lo soporte
-          const nuevaCategoria = await categoriaService.crear(categoriaRequest as CategoriaRequestDTO);
-          setCategoriaId(nuevaCategoria.id);
-          setCategoriaError(null);
-          return nuevaCategoria;
-        } catch (error) {
-          console.error('Error creando categoría:', error);
-          setSaveError('Error al crear la categoría. Por favor, intenta nuevamente.');
-          throw error;
-        }
-      };
+            const categoriaRequest = {
+              nombre,
+              descripcion,
+              apodos: apodosArray,
+            };
+
+            const nuevaCategoria = await categoriaService.crear(categoriaRequest as CategoriaRequestDTO);
+            setCategoriaId(nuevaCategoria.id);
+            setCategoriaError(null);
+            return nuevaCategoria;
+          } catch (error) {
+            console.error('Error creando categoría:', error);
+            setSaveError('Error al crear la categoría. Por favor, intenta nuevamente.');
+            throw error;
+          }
+        };
 
   const handleSave = async () => {
     // 1. Limpiar errores previos

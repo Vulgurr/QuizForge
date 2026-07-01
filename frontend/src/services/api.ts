@@ -18,11 +18,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar errores globales (401/403)
+// Interceptor para manejar errores globales (401)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    if (error.response?.status === 401) {
       // Usamos getState() para disparar el logout fuera de un componente
       useAuthStore.getState().logout();
       // Redirigir a login podría hacerse aquí, pero mejor manejarlo en componentes

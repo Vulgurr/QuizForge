@@ -28,4 +28,7 @@ export const categoriaService = {
     const response = await api.get<CategoriaResponseDTO[]>('/categorias/mis-categorias');
     return response.data;
   },
+    eliminar: async (categoriaId: number): Promise<void> => {
+        await api.delete(`/categorias/${categoriaId}`);
+      }
 };
