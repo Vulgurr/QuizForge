@@ -1,5 +1,5 @@
 import api from './api';
-import type { CategoriaResponseDTO } from '../types';
+import type { CategoriaResponseDTO, CategoriaRequestDTO } from '../types';
 
 export const categoriaService = {
   buscarPorApodo: async (apodo: string): Promise<CategoriaResponseDTO[]> => {
@@ -16,6 +16,16 @@ export const categoriaService = {
 
   obtenerPorSlug: async (slug: string): Promise<CategoriaResponseDTO> => {
     const response = await api.get<CategoriaResponseDTO>(`/categorias/${slug}`);
+    return response.data;
+  },
+
+  crear: async (categoria: CategoriaRequestDTO): Promise<CategoriaResponseDTO> => {
+    const response = await api.post<CategoriaResponseDTO>('/categorias', categoria);
+    return response.data;
+  },
+
+  obtenerMisCategorias: async (): Promise<CategoriaResponseDTO[]> => {
+    const response = await api.get<CategoriaResponseDTO[]>('/categorias/mis-categorias');
     return response.data;
   },
 };
