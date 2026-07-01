@@ -9,6 +9,8 @@ COPY backend/pom.xml .
 COPY backend/src ./src
 
 # La bala de plata: salteamos la compilación de los tests
-RUN mvn clean package -Dmaven.test.skip=true
+# Compilamos y luego renombramos CUALQUIER .jar que se haya generado a "app.jar"
+RUN mvn clean package -Dmaven.test.skip=true && mv target/*.jar target/app.jar
 
-ENTRYPOINT ["java", "-jar", "target/quizforge-backend-0.0.1-SNAPSHOT.jar"]
+# Ahora siempre sabemos exactamente qué archivo ejecutar
+ENTRYPOINT ["java", "-jar", "target/app.jar"]
