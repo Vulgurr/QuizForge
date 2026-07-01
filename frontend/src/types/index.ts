@@ -21,6 +21,12 @@ export interface CategoriaResponseDTO {
   apodos: string[];
 }
 
+export interface CategoriaRequestDTO {
+  nombre: string;
+  descripcion?: string;
+  apodos?: string[];
+}
+
 // ==================== EXAMENES ====================
 export interface ExamenResponseDTO {
   id: number;
@@ -40,7 +46,8 @@ export interface ExamenResumenDTO {
   slug: string;
   creadorId: number;
   categoriaId: number;
-  cantidadPreguntas: number; // <- Propiedad que manda el backend
+  cantidadPreguntas: number;
+  creadoEn?: string; // Lo agregamos como opcional por si Windsurf lo quiere usar
 }
 
 export interface ExamenRequestDTO {
@@ -50,14 +57,6 @@ export interface ExamenRequestDTO {
   preguntas: PreguntaCreateDTO[];
 }
 
-export interface ExamenResumenDTO {
-  id: number;
-  titulo: string;
-  slug: string;
-  creadorId: number;
-  categoriaId: number;
-  creadoEn: string;
-}
 
 // ==================== PREGUNTAS ====================
 export type PreguntaTipo = 

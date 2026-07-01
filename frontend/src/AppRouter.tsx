@@ -75,9 +75,11 @@ function AppRouter() {
         
         {/* Ruta de examen (puede ser pública o protegida según el requisito) */}
         <Route path="/examenes/:slug/rendir" element={<ExamenRunnerView />} />
-        
+        <Route path="/dashboard/editar-examen/:slug" element={<ProtectedRoute><ExamenEditorView /></ProtectedRoute>} />
+
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
     </BrowserRouter>
   );

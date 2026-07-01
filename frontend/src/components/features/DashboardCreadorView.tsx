@@ -196,7 +196,7 @@ function DashboardCreadorView() {
                                     </Link>
                                     {/* Corregimos la ruta de edición */}
                                     <Link
-                                      to={`/dashboard/editar-examen/${examen.id}`}
+                                      to={`/dashboard/editar-examen/${examen.slug}`}
                                       className="p-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                       title="Editar examen"
                                       data-testid={`edit-examen-${examen.id}`}

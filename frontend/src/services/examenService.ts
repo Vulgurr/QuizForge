@@ -8,7 +8,12 @@ import type {
 
 export const examenService = {
   obtenerPorSlug: async (slug: string): Promise<ExamenResponseDTO> => {
-    const response = await api.get<ExamenResponseDTO>(`/examenes/${slug}`);
+      const response = await api.get<ExamenResponseDTO>(`/examenes/${slug}`);
+      return response.data;
+    },
+
+  obtenerPorId: async (examenId: number): Promise<ExamenResponseDTO> => {
+    const response = await api.get<ExamenResponseDTO>(`/examenes/${examenId}`);
     return response.data;
   },
 
@@ -22,6 +27,11 @@ export const examenService = {
     return response.data;
   },
 
+  actualizar: async (examenId: number, examen: ExamenRequestDTO): Promise<ExamenResponseDTO> => {
+    const response = await api.put<ExamenResponseDTO>(`/examenes/${examenId}`, examen);
+    return response.data;
+  },
+
   corregir: async (examenId: number, respuestas: CorreccionRequestDTO): Promise<CorreccionResponseDTO> => {
     const response = await api.post<CorreccionResponseDTO>(`/examenes/${examenId}/corregir`, respuestas);
     return response.data;
@@ -30,8 +40,10 @@ export const examenService = {
   eliminar: async (examenId: number): Promise<void> => {
     await api.delete(`/examenes/${examenId}`);
   },
-  obtenerMisExamenes: async (): Promise<ExamenResponseDTO[]> => {
-    const response = await api.get<ExamenResponseDTO[]>('/examenes/mis-examenes');
+  obtenerMisExamenes: async (categoriaId?: number): Promise<ExamenResponseDTO[]> => {
+    const response = await api.get<ExamenResponseDTO[]>('/examenes/mis-examenes', {
+      params: categoriaId ? { categoriaId } : undefined,
+    });
     return response.data;
   },
 };

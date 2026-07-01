@@ -3,7 +3,7 @@ import PreguntaEditorCard from './PreguntaEditorCard';
 import { BookOpen, Trash2 } from 'lucide-react';
 
 function ExamenBuilder() {
-  const { titulo, descripcion, preguntas, setTitulo, setDescripcion, removePregunta } = useExamenBuilderStore();
+  const { titulo, descripcion, preguntas, setTitulo, setDescripcion, removePregunta, addPregunta } = useExamenBuilderStore();
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6" data-testid="examen-builder">
@@ -46,54 +46,82 @@ function ExamenBuilder() {
       </div>
 
       {/* Lista de preguntas */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            Preguntas ({preguntas.length})
-          </h3>
-        </div>
-
-        {preguntas.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-            <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-600 dark:text-gray-400">
-              No hay preguntas todavía. Importa un JSON o agrégalas manualmente.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {preguntas.map((pregunta, index) => (
-              <div
-                key={index}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-                data-testid={`pregunta-card-${index}`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium text-sm mr-3">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {pregunta.tipo}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => removePregunta(index)}
-                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                    data-testid={`delete-pregunta-${index}`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+      {/* Lista de preguntas */}
+            <div className="space-y-6">
+              {preguntas.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                  No hay preguntas en este examen todavía. Importá un JSON o agregalas manualmente abajo.
                 </div>
+              ) : (
+                preguntas.map((pregunta, index) => (
+                  <div
+                    key={index}
+                    className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-sm"
+                  >
+                    {/* Encabezado de la pregunta con botón de eliminar */}
+                    <div className="flex justify-between items-center mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300 flex items-center">
+                        Pregunta {index + 1}
+                        <span className="ml-3 text-xs font-normal px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full">
+                          {pregunta.tipo.replace('_', ' ')}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removePregunta(index)}
+                        className="text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors p-1"
+                        title="Eliminar pregunta"
+                        data-testid={`eliminar-pregunta-${index}`}
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
 
-                <PreguntaEditorCard pregunta={pregunta} index={index} />
+                    {/* Editor de los campos de la pregunta */}
+                    <PreguntaEditorCard pregunta={pregunta} index={index} />
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* === BOTONERA MODO MANUAL === */}
+            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                Agregar nueva pregunta
+              </h4>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => addPregunta({ tipo: 'MULTIPLE_CHOICE', texto: '', opciones: ['', '', '', ''], respuestaCorrecta: '' })}
+                  className="px-4 py-2 text-sm font-medium bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 transition-colors"
+                >
+                  + Multiple Choice
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addPregunta({ tipo: 'VERDADERO_FALSO', texto: '', respuestaCorrecta: true })}
+                  className="px-4 py-2 text-sm font-medium bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
+                >
+                  + Verdadero / Falso
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addPregunta({ tipo: 'DESARROLLO_DETERMINISTICO', texto: '', respuestaEsperadaExacta: '' })}
+                  className="px-4 py-2 text-sm font-medium bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+                >
+                  + Respuesta Exacta
+                </button>
+                <button
+                  type="button"
+                  onClick={() => addPregunta({ tipo: 'DESARROLLO_NO_DETERMINISTICO', texto: '', rubricaEvaluacion: '' })}
+                  className="px-4 py-2 text-sm font-medium bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-900/50 transition-colors"
+                >
+                  + Desarrollo Libre
+                </button>
               </div>
-            ))}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        );
+      }
 
-export default ExamenBuilder;
+      export default ExamenBuilder;

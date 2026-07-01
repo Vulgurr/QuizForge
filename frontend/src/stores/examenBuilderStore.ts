@@ -2,13 +2,17 @@ import { create } from 'zustand';
 import type { PreguntaDraftDTO, ExamenDraft } from '../types';
 
 interface ExamenBuilderState {
+  examenId: number | null; // <-- NUEVO: Guardamos el ID real para el backend
   titulo: string;
   descripcion: string;
+  categoriaId: number | null;
   preguntas: PreguntaDraftDTO[];
   errorImportacion: string | null;
-  
+
+  setExamenId: (id: number | null) => void; // <-- NUEVO
   setTitulo: (titulo: string) => void;
   setDescripcion: (descripcion: string) => void;
+  setCategoriaId: (categoriaId: number | null) => void;
   setPreguntas: (preguntas: PreguntaDraftDTO[]) => void;
   addPregunta: (pregunta: PreguntaDraftDTO) => void;
   updatePregunta: (index: number, pregunta: PreguntaDraftDTO) => void;
@@ -19,10 +23,16 @@ interface ExamenBuilderState {
 }
 
 export const useExamenBuilderStore = create<ExamenBuilderState>((set) => ({
+  examenId: null, // <-- NUEVO
   titulo: '',
   descripcion: '',
+  categoriaId: null,
   preguntas: [],
   errorImportacion: null,
+
+  setExamenId: (examenId: number | null) => { // <-- NUEVO
+    set({ examenId });
+  },
   
   setTitulo: (titulo: string) => {
     set({ titulo });
@@ -30,6 +40,10 @@ export const useExamenBuilderStore = create<ExamenBuilderState>((set) => ({
   
   setDescripcion: (descripcion: string) => {
     set({ descripcion });
+  },
+  
+  setCategoriaId: (categoriaId: number | null) => {
+    set({ categoriaId });
   },
   
   setPreguntas: (preguntas: PreguntaDraftDTO[]) => {
@@ -80,13 +94,15 @@ export const useExamenBuilderStore = create<ExamenBuilderState>((set) => ({
   },
   
   limpiarBorrador: () => {
-    set({
-      titulo: '',
-      descripcion: '',
-      preguntas: [],
-      errorImportacion: null,
-    });
-  },
+      set({
+        examenId: null, // <-- NUEVO: Limpiamos el ID
+        titulo: '',
+        descripcion: '',
+        categoriaId: null,
+        preguntas: [],
+        errorImportacion: null,
+      });
+    },
   
   setErrorImportacion: (error: string | null) => {
     set({ errorImportacion: error });
