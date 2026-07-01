@@ -10,90 +10,57 @@ import com.quizforge.backend.model.pregunta.PreguntaDesarrolloNoDeterministica;
 import com.quizforge.backend.model.pregunta.PreguntaMultipleChoice;
 import com.quizforge.backend.model.pregunta.PreguntaVerdaderoOFalso;
 import com.quizforge.backend.repository.ExamenRepository;
-import com.quizforge.backend.repository.PreguntaRepository;
+import org.hibernate.Hibernate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Service
 public class GestorCorreccion {
 
     private final ExamenRepository examenRepository;
-    private final PreguntaRepository preguntaRepository;
 
-    public GestorCorreccion(
-            ExamenRepository examenRepository,
-            PreguntaRepository preguntaRepository
-    ) {
+    public GestorCorreccion(ExamenRepository examenRepository) {
         this.examenRepository = examenRepository;
-        this.preguntaRepository = preguntaRepository;
     }
 
     @Transactional(readOnly = true)
     public CorreccionResponseDTO calcularNotaExamen(CorreccionRequestDTO dto, int examenId) {
         Examen examen = examenRepository.findById(examenId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Examen no encontrado: " + examenId
-                ));
-
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Examen no encontrado"));
         int totalPreguntas = examen.getPreguntas().size();
-        if (totalPreguntas == 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "El examen no tiene preguntas para corregir"
-            );
-        }
-
-        Set<Integer> preguntaIdsDelExamen = new HashSet<>();
-        for (Pregunta p : examen.getPreguntas()) {
-            preguntaIdsDelExamen.add(p.getId());
-        }
-
         int correctas = 0;
-        int respuestasConsideradas = 0;
+        int respondidas = 0;
 
         for (RespuestaClienteDTO respuesta : dto.respuestas()) {
-            if (!preguntaIdsDelExamen.contains(respuesta.preguntaId())) {
-                continue;
-            }
-
-            Pregunta pregunta = preguntaRepository.findById(respuesta.preguntaId())
+            // Buscamos la pregunta directamente en el examen por su ID
+            Pregunta pregunta = examen.getPreguntas().stream()
+                    .filter(p -> p.getId().equals(respuesta.preguntaId()))
+                    .findFirst()
                     .orElse(null);
 
-            if (pregunta == null || !pregunta.getExamen().getId().equals(examenId)) {
-                continue;
+            if (pregunta != null) {
+                respondidas++; // Contamos que la pregunta existía
+                if (evaluarRespuesta(pregunta, respuesta.valorDichoPorElUsuario())) {
+                    correctas++;
+                }
             }
-
-            boolean esCorrecta = evaluarRespuesta(pregunta, respuesta.valorDichoPorElUsuario());
-            if (esCorrecta) {
-                correctas++;
-            }
-            respuestasConsideradas++;
         }
 
-        double puntajeFinal = 0.0;
-        if (respuestasConsideradas > 0) {
-            puntajeFinal = ((double) correctas / respuestasConsideradas) * 10.0;
-            puntajeFinal = Math.round(puntajeFinal * 100.0) / 100.0;
-        }
-
-        return new CorreccionResponseDTO(
-                examenId,
-                puntajeFinal,
-                totalPreguntas,
-                correctas
-        );
+        double puntajeFinal = totalPreguntas > 0 ? ((double) correctas / totalPreguntas) * 10.0 : 0.0;
+        return new CorreccionResponseDTO(examenId, Math.round(puntajeFinal * 100.0) / 100.0, totalPreguntas, correctas);
     }
 
     private boolean evaluarRespuesta(Pregunta pregunta, String valorUsuario) {
+        if (valorUsuario == null || valorUsuario.isBlank()) return false;
+
         String valorNormalizado = valorUsuario.trim().toLowerCase();
 
-        return switch (pregunta) {
+        // QUITAMOS LA MÁSCARA: Forzamos a Hibernate a revelar la clase real (subclase)
+        Pregunta preguntaReal = (Pregunta) Hibernate.unproxy(pregunta);
+
+        return switch (preguntaReal) {
             case PreguntaMultipleChoice mc -> {
                 String respuestaCorrecta = mc.getRespuestaCorrecta().trim().toLowerCase();
                 yield valorNormalizado.equals(respuestaCorrecta);
@@ -107,10 +74,10 @@ public class GestorCorreccion {
                 String respuestaEsperada = dd.getRespuestaEsperadaExacta().trim().toLowerCase();
                 yield valorNormalizado.equals(respuestaEsperada);
             }
-            case PreguntaDesarrolloNoDeterministica dn -> {
+            case PreguntaDesarrolloNoDeterministica dn -> false;
+            default -> {
                 yield false;
             }
-            default -> false;
         };
     }
 
