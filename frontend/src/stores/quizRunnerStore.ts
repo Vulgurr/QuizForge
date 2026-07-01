@@ -2,11 +2,12 @@ import { create } from 'zustand';
 import type { CorreccionResponseDTO } from '../types';
 
 interface QuizRunnerState {
-  answers: Map<number, string>;
+  // AQUÍ ES DONDE CAMBIAMOS EL TIPO DE DATOS
+  answers: Record<number, string>;
   isSubmitted: boolean;
   score: number | null;
   examenId: number | null;
-  
+
   setAnswer: (preguntaId: number, respuesta: string) => void;
   removeAnswer: (preguntaId: number) => void;
   submitExam: (result: CorreccionResponseDTO) => void;
@@ -15,43 +16,45 @@ interface QuizRunnerState {
 }
 
 export const useQuizRunnerStore = create<QuizRunnerState>((set) => ({
-  answers: new Map(),
+  answers: {}, // Inicializamos como objeto vacío {}
   isSubmitted: false,
   score: null,
   examenId: null,
-  
+
   setAnswer: (preguntaId: number, respuesta: string) => {
-    set((state) => {
-      const newAnswers = new Map(state.answers);
-      newAnswers.set(preguntaId, respuesta);
-      return { answers: newAnswers };
-    });
+    set((state) => ({
+      // Aquí está el cambio clave para que React detecte el cambio:
+      // Usamos el spread operator para clonar el objeto y actualizar la propiedad
+      answers: { ...state.answers, [preguntaId]: respuesta }
+    }));
   },
-  
+
   removeAnswer: (preguntaId: number) => {
     set((state) => {
-      const newAnswers = new Map(state.answers);
-      newAnswers.delete(preguntaId);
+      const newAnswers = { ...state.answers };
+      delete newAnswers[preguntaId];
       return { answers: newAnswers };
     });
   },
-  
+
   submitExam: (result: CorreccionResponseDTO) => {
-    set({
+    set((state) => ({
+      ...state, // Preserva los otros valores del estado
       isSubmitted: true,
       score: result.puntajeFinal,
-    });
+    }));
   },
-  
+
   resetQuiz: () => {
+      console.log("RESET");
     set({
-      answers: new Map(),
+      answers: {},
       isSubmitted: false,
       score: null,
       examenId: null,
     });
   },
-  
+
   setExamenId: (id: number) => {
     set({ examenId: id });
   },

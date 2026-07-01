@@ -262,11 +262,6 @@ function ExamenEditorView() {
       limpiarBorrador();
       navigate('/dashboard');
     } catch (error: any) {
-      console.log("=== DIAGNÓSTICO DE ERROR ===");
-      console.log("1. Objeto error completo:", error);
-      console.log("2. Status en response:", error?.response?.status);
-      console.log("3. Status directo:", error?.status);
-
       const statusCode = error?.response?.status || error?.status;
 
       if (statusCode === 409) {

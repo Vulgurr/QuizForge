@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { examenService } from '../../services';
 import { useQuizRunnerStore } from '../../stores/quizRunnerStore';
@@ -22,7 +22,15 @@ function ExamenRunnerView() {
   
   // Timer state
   const [elapsedTime, setElapsedTime] = useState(0);
-
+  const submittedRef = useRef(isSubmitted);
+  submittedRef.current = isSubmitted;
+  useEffect(() => {
+      return () => {
+          if (!submittedRef.current) {
+              resetQuiz();
+          }
+      };
+  }, [resetQuiz]);
   // Fetch examen
   useEffect(() => {
     const fetchExamen = async () => {
@@ -59,7 +67,7 @@ function ExamenRunnerView() {
   // Guard para prevenir pérdida de datos
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (answers.size > 0 && !isSubmitted) {
+      if (Object.keys(answers).length > 0 && !isSubmitted) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -70,16 +78,8 @@ function ExamenRunnerView() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [answers.size, isSubmitted]);
+  }, [Object.keys(answers).length, isSubmitted]);
 
-  // Reset quiz al desmontar si no fue enviado
-  useEffect(() => {
-    return () => {
-      if (!isSubmitted) {
-        resetQuiz();
-      }
-    };
-  }, [isSubmitted, resetQuiz]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -90,27 +90,25 @@ function ExamenRunnerView() {
   const handleAnswer = (preguntaId: number, respuesta: string) => {
     setAnswer(preguntaId, respuesta);
   };
+    const handleSubmit = async () => {
+        if (!examen || Object.keys(answers).length === 0) return;
 
-  const handleSubmit = async () => {
-    if (!examen || answers.size === 0) return;
+        setIsSubmitting(true);
+        try {
+          const respuestasArray = Object.entries(answers).map(([preguntaIdStr, valor]) => ({
+            preguntaId: Number(preguntaIdStr),
+            valorDichoPorElUsuario: valor,
+          }));
 
-    setIsSubmitting(true);
-    try {
-      const respuestasArray = Array.from(answers.entries()).map(([preguntaId, valor]) => ({
-        preguntaId,
-        valorDichoPorElUsuario: valor,
-      }));
+          const result = await examenService.corregir(examen.id, { respuestas: respuestasArray });
 
-      const result = await examenService.corregir(examen.id, { respuestas: respuestasArray });
-      submitExam(result);
-      setShowResultModal(true);
-    } catch (err) {
-      console.error('Error corrigiendo examen:', err);
-      setError('Error al enviar el examen');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
+          submitExam(result);
+          setShowResultModal(true);
+        } catch (err) {
+          // ...
+        }
+      };
 
   const handleNext = () => {
     if (examen && currentIndex < examen.preguntas.length - 1) {
@@ -130,7 +128,7 @@ function ExamenRunnerView() {
   };
 
   const renderPregunta = (pregunta: PreguntaConTipo) => {
-    const currentAnswer = answers.get(pregunta.id);
+    const currentAnswer = answers[pregunta.id];
 
     switch (pregunta.tipo) {
       case 'MULTIPLE_CHOICE':
@@ -249,7 +247,7 @@ function ExamenRunnerView() {
 
   const currentPregunta = examen.preguntas[currentIndex];
   const progress = ((currentIndex + 1) / examen.preguntas.length) * 100;
-  const answeredCount = answers.size;
+  const answeredCount = Object.keys(answers).length;
   const totalQuestions = examen.preguntas.length;
 
   return (
@@ -291,7 +289,7 @@ function ExamenRunnerView() {
             {!isSubmitted && !showResultModal && (
               <button
                 onClick={handleSubmit}
-                disabled={answers.size === 0 || isSubmitting}
+                disabled={Object.keys(answers).length === 0 || isSubmitting}
                 className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 data-testid="submit-examen"
               >
