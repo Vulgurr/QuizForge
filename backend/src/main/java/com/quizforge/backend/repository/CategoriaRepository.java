@@ -24,4 +24,11 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Integer> {
 
     @Query("SELECT DISTINCT c FROM Categoria c JOIN Examen e ON c.id = e.categoriaId WHERE e.creadorId = :usuarioId")
     List<Categoria> findCategoriasConExamenesDelUsuario(@Param("usuarioId") int usuarioId);
+
+    @Query("SELECT DISTINCT c FROM Categoria c LEFT JOIN c.apodos a " +
+            "WHERE LOWER(c.nombre) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+            "OR LOWER(c.slug) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+            "OR LOWER(c.descripcion) LIKE LOWER(CONCAT('%', :termino, '%')) " +
+            "OR LOWER(a) LIKE LOWER(CONCAT('%', :termino, '%'))")
+    List<Categoria> buscarPorTerminoGlobal(@Param("termino") String termino);
 }

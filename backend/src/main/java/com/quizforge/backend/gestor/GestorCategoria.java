@@ -110,11 +110,11 @@ public class GestorCategoria {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoriaResponseDTO> buscarPorApodo(String apodo) {
-        // 1. Buscamos en la base de datos (asegurate de tener este método en tu repositorio)
-        List<Categoria> resultados = categoriaRepository.findByApodoContainingIgnoreCase(apodo);
+    public List<CategoriaResponseDTO> buscarPorApodo(String termino) {
+        // 1. Usamos el nuevo método del repositorio que busca en todos lados
+        List<Categoria> resultados = categoriaRepository.buscarPorTerminoGlobal(termino);
 
-        // 2. Mapeamos a DTO. Si "resultados" está vacío, el stream devolverá un [] automáticamente.
+        // 2. Mapeamos a DTO
         return resultados.stream()
                 .map(this::mapearAResponseDTO)
                 .toList();

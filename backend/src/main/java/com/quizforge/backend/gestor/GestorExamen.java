@@ -51,7 +51,12 @@ public class GestorExamen {
     @Transactional
     public ExamenResponseDTO crearExamen(ExamenRequestDTO dto, int usuarioId) {
         validarExamenRequest(dto);
-
+        if (examenRepository.existsByTituloIgnoreCase(dto.titulo())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, // Lanza un 409
+                    "Ya existe un examen con el título ingresado. Por favor, elegí otro."
+            );
+        }
         Categoria categoria = categoriaRepository.findById(dto.categoriaId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -325,5 +330,57 @@ public class GestorExamen {
                 yield pregunta;
             }
         };
+    }
+    @Transactional
+    public ExamenResponseDTO actualizarExamen(int examenId, ExamenRequestDTO dto, int usuarioId, String rol) {
+        validarExamenRequest(dto);
+
+        Examen examen = examenRepository.findById(examenId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Examen no encontrado: " + examenId
+                ));
+
+        // Validación de seguridad (misma lógica que usaste para eliminar)
+        if (!gestorSeguridad.esPropietarioOAdmin(usuarioId, examen.getCreadorId(), rol)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tenés permiso para editar este examen"
+            );
+        }
+
+        // Validación de duplicidad: Solo chilla si cambiaron el título y el nuevo ya está tomado
+        if (!examen.getTitulo().equalsIgnoreCase(dto.titulo()) &&
+                examenRepository.existsByTituloIgnoreCase(dto.titulo())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Ya existe otro examen con el título ingresado. Por favor, elegí otro."
+            );
+        }
+
+        Categoria categoria = categoriaRepository.findById(dto.categoriaId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Categoría no encontrada: " + dto.categoriaId()
+                ));
+
+        // 1. Actualizar campos básicos
+        examen.setTitulo(dto.titulo().trim());
+        examen.setDescripcion(dto.descripcion() != null ? dto.descripcion().trim() : null);
+        examen.setCategoriaId(categoria.getId());
+
+        // (Nota: El slug no se regenera para evitar romper los enlaces (URLs) que ya estén compartidos)
+
+        // 2. Actualizar preguntas (Estrategia: Limpiar y reinsertar)
+        examen.getPreguntas().clear();
+
+        for (PreguntaDTO preguntaDto : dto.preguntas()) {
+            validarPregunta(preguntaDto);
+            Pregunta pregunta = crearPreguntaDesdeDTO(preguntaDto);
+            examen.agregarPregunta(pregunta);
+        }
+
+        Examen examenActualizado = examenRepository.save(examen);
+        return mapearAResponseDTO(examenActualizado);
     }
 }
